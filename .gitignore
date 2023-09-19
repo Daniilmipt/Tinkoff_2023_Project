@@ -1,5 +1,7 @@
-/.gradle
-/.idea
-/build
-/gradlew.bat
-/lombok.config
+*
+!src
+!gradle
+!gradlew.bat
+!.gitignore
+!README.md
+!settings.gradle.kts
