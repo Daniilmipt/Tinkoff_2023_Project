@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.Weather;
 import org.example.services.impl.WeatherServiceImpl;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +29,12 @@ public class WeatherController {
             description = "Получить по городу все температуры на заданную дату"
     )
     @GetMapping("/{regionName}")
-    public HttpEntity<Object> get(@PathVariable @Parameter(description = "Название региона") String regionName,
-                                  @RequestParam(value="dateTime") @Parameter(description = "Дата и время") String dateTimeRaw){
+    public ResponseEntity<Object> get(@PathVariable @Parameter(description = "Название региона") String regionName,
+                                  @RequestParam(value="dateTime", required=false) @Parameter(description = "Дата и время") String dateTimeRaw){
+        ResponseEntity<Object> nullParamsResponse = checkNullParams(regionName, dateTimeRaw, "");
+        if (nullParamsResponse != null){
+            return nullParamsResponse;
+        }
         try {
             Date dateTime = format.parse(dateTimeRaw);
             List<Integer> temeratureList = weatherService.get(regionName, dateTime);
@@ -53,9 +56,13 @@ public class WeatherController {
             description = "Добавить город по температуре и дате. Если такой есть - ничего не делать"
     )
     @PostMapping("/{regionName}")
-    public HttpEntity<Object> add(@PathVariable @Parameter(description = "Название региона") String regionName,
+    public ResponseEntity<Object> add(@PathVariable @Parameter(description = "Название региона") String regionName,
                        @RequestParam(value="dateTime") @Parameter(description = "Дата и время") String dateTimeRaw,
                        @RequestParam(value="temperature") @Parameter(description = "Температура") String temperatureRaw){
+        ResponseEntity<Object> nullParamsResponse = checkNullParams(regionName, dateTimeRaw, temperatureRaw);
+        if (nullParamsResponse != null){
+            return nullParamsResponse;
+        }
         try {
             Date dateTime = format.parse(dateTimeRaw);
             Integer temperature = Integer.parseInt(temperatureRaw);
@@ -86,9 +93,13 @@ public class WeatherController {
             description = "Обновить температуру на заданную дату по городу, если такой нет, то добавить запись"
     )
     @PutMapping("/{regionName}")
-    public HttpEntity<Object> put(@PathVariable @Parameter(description = "Название региона") String regionName,
+    public ResponseEntity<Object> put(@PathVariable @Parameter(description = "Название региона") String regionName,
                              @RequestParam(value="dateTime") @Parameter(description = "Дата и время") String dateTimeRaw,
                              @RequestParam(value="temperature") @Parameter(description = "Температура") String temperatureRaw){
+        ResponseEntity<Object> nullParamsResponse = checkNullParams(regionName, dateTimeRaw, temperatureRaw);
+        if (nullParamsResponse != null){
+            return nullParamsResponse;
+        }
         try {
             Date dateTime = format.parse(dateTimeRaw);
             Integer temperature = Integer.parseInt(temperatureRaw);
@@ -111,7 +122,7 @@ public class WeatherController {
             description = "Удалять все записи, где есть город"
     )
     @DeleteMapping("/{regionName}")
-    public HttpEntity<Object> delete(@PathVariable @Parameter(description = "Название региона") String regionName){
+    public ResponseEntity<Object> delete(@PathVariable @Parameter(description = "Название региона") String regionName){
         List<Weather> weatherList = weatherService.delete(regionName).orElse(null);
         if (weatherList == null){
             return new ResponseEntity<>(ResponseErrorBody(
@@ -133,5 +144,20 @@ public class WeatherController {
         mapBody.put("error", error);
         mapBody.put("path", path);
         return mapBody;
+    }
+
+    private ResponseEntity<Object> checkNullParams(String regionName, String dateTimeRaw, String temperature){
+        if (dateTimeRaw == null || temperature == null){
+            String error = dateTimeRaw == null ? "dateTime cant be null" : "temperature cant be null";
+            return new ResponseEntity<>(
+                    ResponseErrorBody(
+                            HttpStatus.BAD_REQUEST,
+                            error,
+                            String.format("/api/wheather/%s", regionName
+                            )
+                    ),
+                    HttpStatus.BAD_REQUEST);
+        }
+        return null;
     }
 }
