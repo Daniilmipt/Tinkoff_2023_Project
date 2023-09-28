@@ -1,26 +1,40 @@
 import org.gradle.jvm.tasks.Jar
 
 plugins {
-    id("java")
-    kotlin("jvm") version "1.8.10"
-    id("org.jetbrains.kotlin.plugin.lombok") version "1.5.20-RC"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    java
+    id("org.springframework.boot") version "2.7.16"
+    id("io.spring.dependency-management") version "1.0.15.RELEASE"
 }
 
 group = "org.example"
 version = "1.0-SNAPSHOT"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
+
+configurations {
+    compileOnly {
+        extendsFrom(configurations.annotationProcessor.get())
+    }
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.testng:testng:7.7.0")
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    implementation(kotlin("stdlib-jdk8"))
-    compileOnly("org.projectlombok:lombok:1.18.20")
-    annotationProcessor("org.projectlombok:lombok:1.18.20")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springdoc:springdoc-openapi-data-rest:1.6.0")
+    implementation("org.springdoc:springdoc-openapi-ui:1.6.0")
+    implementation("org.springdoc:springdoc-openapi-kotlin:1.6.0")
+    compileOnly("org.projectlombok:lombok")
+    annotationProcessor("org.projectlombok:lombok")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 tasks.test {
@@ -28,7 +42,7 @@ tasks.test {
 }
 
 val fatJar = task("fatJar", type = Jar::class) {
-    var baseName = "${project.name}-fat"
+    "${project.name}-fat"
     manifest {
         attributes["Implementation-Title"] = "Gradle Jar File Example"
         attributes["Implementation-Version"] = version
@@ -44,7 +58,7 @@ tasks {
     }
 }
 
-tasks.withType<Jar>() {
+tasks.withType<Jar> {
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
