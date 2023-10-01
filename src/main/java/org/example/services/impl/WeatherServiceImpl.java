@@ -5,7 +5,7 @@ import org.example.repositories.WeatherRepository;
 import org.example.services.WeatherService;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,22 +18,24 @@ public class WeatherServiceImpl implements WeatherService {
     }
 
     @Override
-    public List<Integer> get(String regionName, Date dateTime) {
-        return weatherRepository.getTemperature(regionName, dateTime);
+    public List<Integer> get(String regionName, LocalDate date) {
+        return weatherRepository.getTemperature(regionName, date);
     }
 
     @Override
-    public Optional<Weather> add(String regionName, Integer temperature, Date dateTime) {
-        return weatherRepository.addRegion(regionName, temperature, dateTime);
+    public Optional<Weather> add(String regionName, Integer temperature, LocalDate date) {
+        return weatherRepository.addRegion(regionName, temperature, date);
     }
 
     @Override
-    public List<Weather> update(String regionName, Integer temperature, Date dateTime) {
-        return weatherRepository.updateWeather(regionName, temperature, dateTime);
+    public Integer updateTempetatureByRegionAndDatetime(String regionName,
+                                                        Integer temperature,
+                                                        LocalDate date) {
+        return weatherRepository.updateWeather(regionName, temperature, date);
     }
 
     @Override
-    public Optional<List<Weather>> delete(String regionName) {
-        return weatherRepository.deleteWeather(regionName);
+    public void deleteWeatherByRegionName(String regionName) {
+        weatherRepository.deleteWeather(regionName);
     }
 }
