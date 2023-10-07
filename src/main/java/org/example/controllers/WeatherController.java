@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.Weather;
-import org.example.services.impl.WeatherApiServiceImpl;
+import org.example.services.impl.WeatherClientServiceImpl;
 import org.example.services.impl.WeatherServiceImpl;
 import org.example.validation.WeatherValid;
 import org.springframework.http.HttpStatus;
@@ -22,8 +22,8 @@ import java.util.Optional;
 @Tag(name="Контроллер для управления погодой", description="Определены Crud методы")
 public class WeatherController {
     private final WeatherServiceImpl weatherService;
-    private final WeatherApiServiceImpl weatherApiService;
-    public WeatherController(WeatherServiceImpl weatherService, WeatherApiServiceImpl weatherApiService){
+    private final WeatherClientServiceImpl weatherApiService;
+    public WeatherController(WeatherServiceImpl weatherService, WeatherClientServiceImpl weatherApiService){
         this.weatherService = weatherService;
         this.weatherApiService = weatherApiService;
     }
@@ -36,7 +36,7 @@ public class WeatherController {
     public ResponseEntity<Object> externalCurrentTemperature(@RequestParam(value="q", required = false)
                                            @Parameter(description = "q")
                                             String q){
-        return weatherApiService.getCurrentTemperature(q);
+        return new ResponseEntity<>(weatherApiService.getCurrentTemperature(q), HttpStatus.OK);
     }
 
     @Operation(

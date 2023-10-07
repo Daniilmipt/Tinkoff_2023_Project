@@ -2,8 +2,8 @@ package org.example.validation;
 
 import org.example.Weather;
 import org.example.dto.ResponseErrorDto;
-import org.example.exceptions.enums.OperationException;
-import org.example.exceptions.enums.WeatherValidException;
+import org.example.exceptions.OperationException;
+import org.example.exceptions.WeatherValidException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
