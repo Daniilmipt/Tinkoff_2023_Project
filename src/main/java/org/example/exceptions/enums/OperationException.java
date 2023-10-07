@@ -1,4 +1,4 @@
-package org.example.exceptions;
+package org.example.exceptions.enums;
 
 import lombok.Getter;
 

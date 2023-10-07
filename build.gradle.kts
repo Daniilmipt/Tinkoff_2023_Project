@@ -25,9 +25,11 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webflux:3.1.2")
     implementation("org.springdoc:springdoc-openapi-data-rest:1.6.0")
     implementation("org.springdoc:springdoc-openapi-ui:1.6.0")
     implementation("org.springdoc:springdoc-openapi-kotlin:1.6.0")
+    implementation("io.github.resilience4j:resilience4j-spring-boot2:1.7.0")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
