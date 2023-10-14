@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog  http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+<changeSet id="2023-12-10-create-weather-table" author="d.sadovnikov">
+    <createTable tableName="region">
+        <column name="id" type="BIGINT" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="name" type="VARCHAR(255)"/>
+    </createTable>
+
+    <createTable tableName="weather">
+        <column name="id" type="BIGINT" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="region_id" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="type_id" type="BIGINT">
+            <constraints nullable="false"/>
+        </column>
+        <column name="temperature" type="INT"/>
+        <column name="date" type="DATE"/>
+    </createTable>
+
+    <createTable tableName="weather_type">
+        <column name="id" type="BIGINT" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="description" type="VARCHAR(255)"/>
+    </createTable>
+
+    <addUniqueConstraint
+            constraintName="constraint_weather"
+            tableName="weather"
+            columnNames="region_id, date"/>
+
+    <addForeignKeyConstraint
+            baseTableName="weather"
+            baseColumnNames="region_id"
+            constraintName="fk_region_id"
+            referencedTableName="region"
+            referencedColumnNames="id"
+            onDelete="CASCADE"
+            onUpdate="CASCADE"/>
+
+    <addForeignKeyConstraint
+            baseTableName="weather"
+            baseColumnNames="type_id"
+            constraintName="fk_type_id"
+            referencedTableName="weather_type"
+            referencedColumnNames="id"
+            onDelete="CASCADE"
+            onUpdate="CASCADE"/>
+
+    <insert tableName="region">
+        <column name="id" value="5"/>
+        <column name="name" value="Moscow"/>
+    </insert>
+    <insert tableName="region">
+        <column name="id" value="6"/>
+        <column name="name" value="Piter"/>
+    </insert>
+    <insert tableName="region">
+        <column name="id" value="7"/>
+        <column name="name" value="Chelyabinsk"/>
+    </insert>
+    <insert tableName="region">
+        <column name="id" value="8"/>
+        <column name="name" value="Kazan"/>
+    </insert>
+
+    <insert tableName="weather_type">
+        <column name="id" value="5"/>
+        <column name="description" value="Cold"/>
+    </insert>
+    <insert tableName="weather_type">
+        <column name="id" value="6"/>
+        <column name="description" value="Warm"/>
+    </insert>
+
+    <insert tableName="weather">
+        <column name="id" value="5"/>
+        <column name="region_id" value="5"/>
+        <column name="type_id" value="5"/>
+        <column name="temperature" value="12"/>
+        <column name="date" value="2019-01-21"/>
+    </insert>
+    <insert tableName="weather">
+        <column name="id" value="7"/>
+        <column name="region_id" value="6"/>
+        <column name="type_id" value="5"/>
+        <column name="temperature" value="22"/>
+        <column name="date" value="2022-01-21"/>
+    </insert>
+    <insert tableName="weather">
+        <column name="id" value="6"/>
+        <column name="region_id" value="7"/>
+        <column name="type_id" value="6"/>
+        <column name="temperature" value="-4"/>
+        <column name="date" value="2023-01-21"/>
+    </insert>
+</changeSet>
+</databaseChangeLog>
