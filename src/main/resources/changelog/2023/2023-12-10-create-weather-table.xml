@@ -37,6 +37,36 @@
             constraintName="constraint_weather"
             tableName="weather"
             columnNames="region_id, date"/>
+    <addUniqueConstraint
+            constraintName="constraint_region"
+            tableName="region"
+            columnNames="name"/>
+    <addUniqueConstraint
+            constraintName="constraint_weather_type"
+            tableName="weather_type"
+            columnNames="description"/>
+
+    <createIndex indexName="weather_id" tableName="weather">
+        <column name="id"/>
+    </createIndex>
+    <createIndex indexName="weather" tableName="weather">
+        <column name="region_id"/>
+        <column name="date"/>
+    </createIndex>
+
+    <createIndex indexName="region_id" tableName="region">
+        <column name="id"/>
+    </createIndex>
+    <createIndex indexName="region_name" tableName="region">
+        <column name="name"/>
+    </createIndex>
+
+    <createIndex indexName="weather_type_id" tableName="weather_type">
+        <column name="id"/>
+    </createIndex>
+    <createIndex indexName="weather_type_description" tableName="weather_type">
+        <column name="description"/>
+    </createIndex>
 
     <addForeignKeyConstraint
             baseTableName="weather"

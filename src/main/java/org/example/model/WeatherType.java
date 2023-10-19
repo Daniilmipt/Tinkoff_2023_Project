@@ -19,4 +19,8 @@ public class WeatherType {
     private Long id;
 
     private String description;
+
+    public WeatherType(String description) {
+        this.description = description;
+    }
 }

@@ -29,4 +29,7 @@ public interface WeatherModelHiberRepository extends CrudRepository<WeatherNew, 
     @Query("delete from WeatherNew as w where w.region_id = :region_id and w.date=:date")
     @Modifying
     void deleteWeatherByRegionAndDate(Long region_id, LocalDate date);
+
+    @Query("select wn from WeatherNew as wn where wn.region_id = :region_id and wn.date=:date")
+    Optional<WeatherNew> findIfExists(Long region_id, LocalDate date);
 }
