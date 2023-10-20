@@ -19,59 +19,71 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
 
     @Override
     public WeatherType save(WeatherType weatherType) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-
-        Optional<WeatherType> weatherTypeDataBase = findIfExists(connection, weatherType.getDescription());
-        if (weatherTypeDataBase.isEmpty()) {
-            PreparedStatement insertStatement = connection.prepareStatement(WeatherTypeSql.INSERT.getMessage());
-            insertStatement.setString(1, weatherType.getDescription());
-            insertStatement.execute();
-            WeatherType weatherTypeInserted = findIfExists(connection, weatherType.getDescription()).get();
-            closeResources(insertStatement, connection);
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+            WeatherType weatherTypeInserted = insertRow(connection, weatherType);
+            connection.close();
             return weatherTypeInserted;
         }
-        connection.close();
-        return weatherTypeDataBase.get();
     }
 
     @Override
     public Optional<WeatherType> get(Long weatherTypeId) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 
-        PreparedStatement selectStatement = connection.prepareStatement(WeatherTypeSql.SELECT.getMessage());
-        selectStatement.setLong(1, weatherTypeId);
-        ResultSet rs = selectStatement.executeQuery();
-        Optional<WeatherType> weatherType = Optional.empty();
-        if (rs.next()){
-            weatherType = Optional.of(new WeatherType(rs.getLong("id"), rs.getString("description")));
+            try (PreparedStatement selectStatement = connection.prepareStatement(WeatherTypeSql.SELECT.getMessage())) {
+                selectStatement.setLong(1, weatherTypeId);
+                ResultSet rs = selectStatement.executeQuery();
+                Optional<WeatherType> weatherType = Optional.empty();
+                if (rs.next()) {
+                    weatherType = Optional.of(new WeatherType(rs.getLong("id"), rs.getString("description")));
+                }
+                closeResources(selectStatement, connection);
+                return weatherType;
+            }
         }
-        closeResources(selectStatement, connection);
-        return weatherType;
     }
 
     @Override
     public void delete(Long weatherTypeId) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
 
-        PreparedStatement deleteStatement = connection.prepareStatement(WeatherTypeSql.DELETE.getMessage());
-        deleteStatement.setLong(1, weatherTypeId);
-        deleteStatement.execute();
-        closeResources(deleteStatement, connection);
+            try (PreparedStatement deleteStatement = connection.prepareStatement(WeatherTypeSql.DELETE.getMessage())) {
+                deleteStatement.setLong(1, weatherTypeId);
+                deleteStatement.execute();
+                closeResources(deleteStatement, connection);
+            }
+        }
     }
 
     @Override
     public void update(Long weatherTypeId, String description) throws SQLException {
-        Connection connection = dataSource.getConnection();
-        connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
 
-        PreparedStatement updateStatement = connection.prepareStatement(WeatherTypeSql.UPDATE.getMessage());
-        updateStatement.setString(1, description);
-        updateStatement.setLong(2, weatherTypeId);
-        updateStatement.execute();
-        closeResources(updateStatement, connection);
+            try (PreparedStatement updateStatement = connection.prepareStatement(WeatherTypeSql.UPDATE.getMessage())) {
+                updateStatement.setString(1, description);
+                updateStatement.setLong(2, weatherTypeId);
+                updateStatement.execute();
+                closeResources(updateStatement, connection);
+            }
+        }
+    }
+
+    public static WeatherType insertRow(Connection connection, WeatherType weatherType) throws SQLException {
+        Optional<WeatherType> weatherTypeDataBase = findIfExists(connection, weatherType.getDescription());
+        if (weatherTypeDataBase.isEmpty()) {
+            try (PreparedStatement insertStatement = connection.prepareStatement(WeatherTypeSql.INSERT.getMessage())) {
+                insertStatement.setString(1, weatherType.getDescription());
+                insertStatement.execute();
+                insertStatement.close();
+                return findIfExists(connection, weatherType.getDescription()).get();
+            }
+        }
+        return weatherTypeDataBase.get();
     }
 
     private static void closeResources(Statement statement, Connection connection) throws SQLException {
@@ -79,14 +91,15 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
         connection.close();
     }
 
-    private Optional<WeatherType> findIfExists(Connection connection, String description) throws SQLException {
-        PreparedStatement selectStatement = connection.prepareStatement(WeatherTypeSql.SELECT_IF_EXISTS.getMessage());
-        selectStatement.setString(1, description);
-        ResultSet rs = selectStatement.executeQuery();
-        Optional<WeatherType> weatherType = Optional.empty();
-        if (rs.next()){
-            weatherType = Optional.of(new WeatherType(rs.getLong("id"), rs.getString("description")));
+    public static Optional<WeatherType> findIfExists(Connection connection, String description) throws SQLException {
+        try (PreparedStatement selectStatement = connection.prepareStatement(WeatherTypeSql.SELECT_IF_EXISTS.getMessage())) {
+            selectStatement.setString(1, description);
+            ResultSet rs = selectStatement.executeQuery();
+            Optional<WeatherType> weatherType = Optional.empty();
+            if (rs.next()) {
+                weatherType = Optional.of(new WeatherType(rs.getLong("id"), rs.getString("description")));
+            }
+            return weatherType;
         }
-        return weatherType;
     }
 }

@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface WeatherNewService {
     WeatherNew save(WeatherNew weatherNew) throws SQLException;
-    void saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature) throws SQLException;
+    WeatherNew saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature) throws SQLException;
     Optional<WeatherNew> getByRegionAndDate(Long region_id, LocalDate date) throws SQLException;
     Optional<WeatherNew> get(Long weatherModel_id) throws SQLException;
     void deleteByRegion(Long regionId) throws SQLException;

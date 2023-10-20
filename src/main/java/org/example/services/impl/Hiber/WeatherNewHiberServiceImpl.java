@@ -26,10 +26,10 @@ public class WeatherNewHiberServiceImpl implements WeatherNewService {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @Override
-    public void saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature){
+    public WeatherNew saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature){
         Region regionDataBase = regionHiberService.save(region);
         WeatherType weatherTypeDataBase = weatherTypeHiberService.save(weatherType);
-        save(new WeatherNew(regionDataBase.getId(), weatherTypeDataBase.getId(), temperature, LocalDate.now()));
+        return save(new WeatherNew(regionDataBase.getId(), weatherTypeDataBase.getId(), temperature, LocalDate.now()));
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
