@@ -1,47 +1,56 @@
 package org.example.services.impl.JDBC;
 
 import org.example.enums.jdbc.WeatherSql;
+import org.example.exceptions.SqlException;
 import org.example.exceptions.weatherApi.ResponseException;
 import org.example.model.Region;
 import org.example.model.WeatherNew;
 import org.example.model.WeatherType;
 import org.example.services.WeatherNewService;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
 public class WeatherNewJdbcServiceImpl implements WeatherNewService {
     private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
 
     public WeatherNewJdbcServiceImpl(DataSource dataSource) {
         this.dataSource = dataSource;
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     @Override
-    public WeatherNew save(WeatherNew weatherNew) throws SQLException {
+    public WeatherNew save(WeatherNew weatherNew) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            WeatherNew weatherNewInserted = insertRow(connection, weatherNew);
-            connection.close();
-            return weatherNewInserted;
+            return insertRow(jdbcTemplate, weatherNew);
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            throw new SqlException(message, "table weather", 500);
         }
     }
 
 
     @Override
-    public WeatherNew saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature) throws SQLException {
+    public WeatherNew saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             Savepoint save = connection.setSavepoint();
             try {
-                Region regionInserted = RegionJdbcServiceImpl.insertRow(connection, region);
+                Region regionInserted = RegionJdbcServiceImpl.insertRow(jdbcTemplate, region);
                 Savepoint saveRegion = connection.setSavepoint();
                 try {
-                    WeatherType weatherTypeInserted = WeatherTypeJdbcServiceImpl.insertRow(connection, weatherType);
+                    WeatherType weatherTypeInserted = WeatherTypeJdbcServiceImpl.insertRow(jdbcTemplate, weatherType);
                     Savepoint saveRegionAndType = connection.setSavepoint();
                     try {
                         WeatherNew weatherNew = new WeatherNew(
@@ -50,176 +59,192 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                                 temperature,
                                 LocalDate.now()
                         );
-                        WeatherNew weatherNewInserted = insertRow(connection, weatherNew);
+                        WeatherNew weatherNewInserted = insertRow(jdbcTemplate, weatherNew);
                         connection.commit();
-                        connection.close();
                         return weatherNewInserted;
                     } catch (Exception e) {
                         connection.rollback(saveRegionAndType);
-                        throw new ResponseException(e.getMessage(), "database exception", 500);
+                        throw new SqlException(e.getMessage(), "database exception", 500);
                     }
                 }
                 catch (Exception e) {
                     if (!(e instanceof ResponseException)){
-                        System.out.println("a");
                         connection.rollback(saveRegion);
-                        connection.close();
                     }
                     throw e;
                 }
             } catch (Exception e) {
                 if (!(e instanceof ResponseException)){
-                    System.out.println("a");
                     connection.rollback(save);
-                    connection.close();
                 }
                 throw e;
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            throw new SqlException(message, "table weather", 500);
         }
     }
 
     @Override
-    public Optional<WeatherNew> getByRegionAndDate(Long region_id, LocalDate date) throws SQLException {
+    public Optional<WeatherNew> getByRegionAndDate(Long region_id, LocalDate date) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-            try (PreparedStatement selectStatement = connection.prepareStatement(WeatherSql.SELECT_BY_REGION_DATE.getMessage())) {
-                selectStatement.setLong(1, region_id);
-                selectStatement.setDate(2, Date.valueOf(date));
-                ResultSet rs = selectStatement.executeQuery();
-                Optional<WeatherNew> weatherNew = Optional.empty();
-                if (rs.next()) {
-                    weatherNew = Optional.of(new WeatherNew(
-                            rs.getLong("id"),
-                            rs.getLong("region_id"),
-                            rs.getLong("type_id"),
-                            rs.getInt("temperature"),
-                            rs.getDate("date").toLocalDate()
-                    ));
-                }
-                closeResources(selectStatement, connection);
-                return weatherNew;
-            }
-        }
-    }
-
-    @Override
-    public Optional<WeatherNew> get(Long weatherModel_id) throws SQLException {
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-
-            try (PreparedStatement selectStatement = connection.prepareStatement(WeatherSql.SELECT.getMessage())) {
-                selectStatement.setLong(1, weatherModel_id);
-                ResultSet rs = selectStatement.executeQuery();
-                Optional<WeatherNew> weatherNew = Optional.empty();
-                if (rs.next()) {
-                    weatherNew = Optional.of(new WeatherNew(
-                            rs.getLong("id"),
-                            rs.getLong("region_id"),
-                            rs.getLong("type_id"),
-                            rs.getInt("temperature"),
-                            rs.getDate("date").toLocalDate()
-                    ));
-                }
-                closeResources(selectStatement, connection);
-                return weatherNew;
-            }
-        }
-    }
-
-    @Override
-    public void deleteByRegion(Long regionId) throws SQLException {
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            try (PreparedStatement deleteStatement = connection.prepareStatement(WeatherSql.DELETE_BY_REGION.getMessage())) {
-                deleteStatement.setLong(1, regionId);
-                deleteStatement.execute();
-                closeResources(deleteStatement, connection);
-            }
-        }
-    }
-
-    @Override
-    public void deleteByRegionAndDate(Long regionId, LocalDate date) throws SQLException {
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-
-            try (PreparedStatement deleteStatement = connection.prepareStatement(WeatherSql.DELETE_BY_REGION_DATE.getMessage())) {
-                deleteStatement.setLong(1, regionId);
-                deleteStatement.setDate(2, Date.valueOf(date));
-                deleteStatement.execute();
-                closeResources(deleteStatement, connection);
-            }
-        }
-    }
-
-    @Override
-    public void updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date) throws SQLException {
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-
-            try (PreparedStatement updateStatement = connection.prepareStatement(WeatherSql.UPDATE_TEMPERATURE.getMessage())) {
-                updateStatement.setInt(1, temperature);
-                updateStatement.setLong(2, region_id);
-                updateStatement.setDate(3, Date.valueOf(date));
-                updateStatement.execute();
-                closeResources(updateStatement, connection);
-            }
-        }
-    }
-
-    @Override
-    public void updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date) throws SQLException {
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-
-            try (PreparedStatement updateStatement = connection.prepareStatement(WeatherSql.UPDATE_WEATHER.getMessage())) {
-                updateStatement.setLong(1, type_id);
-                updateStatement.setLong(2, region_id);
-                updateStatement.setDate(3, Date.valueOf(date));
-                updateStatement.execute();
-                closeResources(updateStatement, connection);
-            }
-        }
-    }
-
-    private static void closeResources(Statement statement, Connection connection) throws SQLException {
-        statement.close();
-        connection.close();
-    }
-
-    private static Optional<WeatherNew> findIfExists(Connection connection, Long region_id, LocalDate date) throws SQLException {
-        try (PreparedStatement selectStatement = connection.prepareStatement(WeatherSql.SELECT_IF_EXISTS.getMessage())) {
-            selectStatement.setLong(1, region_id);
-            selectStatement.setDate(2, Date.valueOf(date));
-            ResultSet rs = selectStatement.executeQuery();
-            Optional<WeatherNew> weatherNew = Optional.empty();
-            if (rs.next()) {
-                weatherNew = Optional.of(new WeatherNew(
-                        rs.getLong("id"),
-                        rs.getLong("region_id"),
-                        rs.getLong("type_id"),
-                        rs.getInt("temperature"),
-                        rs.getDate("date").toLocalDate()
+            try {
+                return Optional.ofNullable(jdbcTemplate.queryForObject(
+                        WeatherSql.SELECT_BY_REGION_DATE.getMessage(), new Object[]{region_id, Date.valueOf(date)}, (rs, rowNum) ->
+                                new WeatherNew(
+                                        rs.getLong("id"),
+                                        rs.getLong("region_id"),
+                                        rs.getLong("type_id"),
+                                        rs.getInt("temperature"),
+                                        rs.getDate("date").toLocalDate()
+                                )
                 ));
+            } catch (DataAccessException e){
+                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                throw new SqlException(message, "table weather", 500);
             }
-            selectStatement.close();
-            return weatherNew;
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            throw new SqlException(message, "table weather", 500);
         }
     }
 
-    public static WeatherNew insertRow(Connection connection, WeatherNew weatherNew) throws SQLException {
-        Optional<WeatherNew> weatherNewDataBase = findIfExists(connection, weatherNew.getRegion_id(), weatherNew.getDate());
-        if (weatherNewDataBase.isEmpty()) {
-            try (PreparedStatement insertStatement = connection.prepareStatement(WeatherSql.INSERT.getMessage())) {
-                insertStatement.setLong(1, weatherNew.getRegion_id());
-                insertStatement.setLong(2, weatherNew.getType_id());
-                insertStatement.setInt(3, weatherNew.getTemperature());
-                insertStatement.setDate(4, Date.valueOf(weatherNew.getDate()));
-                insertStatement.execute();
-                insertStatement.close();
-                return findIfExists(connection, weatherNew.getRegion_id(), weatherNew.getDate()).get();
+    @Override
+    public Optional<WeatherNew> get(Long weatherModel_id) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+            try {
+                return Optional.ofNullable(jdbcTemplate.queryForObject(
+                        WeatherSql.SELECT.getMessage(), new Object[]{weatherModel_id}, (rs, rowNum) ->
+                                new WeatherNew(
+                                        rs.getLong("id"),
+                                        rs.getLong("region_id"),
+                                        rs.getLong("type_id"),
+                                        rs.getInt("temperature"),
+                                        rs.getDate("date").toLocalDate()
+                                )
+                ));
+            } catch (DataAccessException e){
+                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                throw new SqlException(message, "table weather", 500);
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            throw new SqlException(message, "table weather", 500);
         }
-        return weatherNewDataBase.get();
+    }
+
+    @Override
+    public void deleteByRegion(Long regionId) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            try {
+                jdbcTemplate.update(
+                        WeatherSql.DELETE_BY_REGION.getMessage(),
+                        regionId
+                );
+            } catch (DataAccessException e){
+                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                throw new SqlException(message, "table weather", 500);
+            }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            throw new SqlException(message, "table weather", 500);
+        }
+    }
+
+    @Override
+    public void deleteByRegionAndDate(Long regionId, LocalDate date) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            try {
+                jdbcTemplate.update(
+                        WeatherSql.DELETE_BY_REGION_DATE.getMessage(),
+                        regionId,
+                        Date.valueOf(date)
+                );
+            } catch (DataAccessException e){
+                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                throw new SqlException(message, "table weather", 500);
+            }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            throw new SqlException(message, "table weather", 500);
+        }
+    }
+
+    @Override
+    public void updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            try {
+                jdbcTemplate.update(
+                        WeatherSql.UPDATE_TEMPERATURE.getMessage(),
+                        temperature,
+                        region_id,
+                        Date.valueOf(date)
+                );
+            } catch (DataAccessException e){
+                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                throw new SqlException(message, "table weather", 500);
+            }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            throw new SqlException(message, "table weather", 500);
+        }
+    }
+
+    @Override
+    public void updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date) {
+        try (Connection connection = dataSource.getConnection()) {
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            try {
+                jdbcTemplate.update(
+                        WeatherSql.UPDATE_WEATHER.getMessage(),
+                        type_id,
+                        region_id,
+                        Date.valueOf(date)
+                );
+            } catch (DataAccessException e){
+                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                throw new SqlException(message, "table weather", 500);
+            }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            throw new SqlException(message, "table weather", 500);
+        }
+    }
+
+    private static Optional<WeatherNew> findIfExists(JdbcTemplate jdbcTemplate, Long region_id, LocalDate date) {
+        try {
+            return Optional.ofNullable(jdbcTemplate.queryForObject(
+                    WeatherSql.SELECT_IF_EXISTS.getMessage(), new Object[]{region_id, Date.valueOf(date)}, (rs, rowNum) ->
+                            new WeatherNew(
+                                    rs.getLong("id"),
+                                    rs.getLong("region_id"),
+                                    rs.getLong("type_id"),
+                                    rs.getInt("temperature"),
+                                    rs.getDate("date").toLocalDate()
+                            )
+            ));
+        } catch (DataAccessException e){
+            return Optional.empty();
+        }
+    }
+
+    public static WeatherNew insertRow(JdbcTemplate jdbcTemplate, WeatherNew weatherNew) {
+        try {
+            jdbcTemplate.update(
+                    WeatherSql.INSERT.getMessage(),
+                    weatherNew.getRegion_id(),
+                    weatherNew.getType_id(),
+                    weatherNew.getTemperature(),
+                    Date.valueOf(weatherNew.getDate())
+            );
+            return findIfExists(jdbcTemplate, weatherNew.getRegion_id(), weatherNew.getDate()).get();
+        } catch (DataAccessException e){
+            return findIfExists(jdbcTemplate, weatherNew.getRegion_id(), weatherNew.getDate()).get();
+        }
     }
 }
