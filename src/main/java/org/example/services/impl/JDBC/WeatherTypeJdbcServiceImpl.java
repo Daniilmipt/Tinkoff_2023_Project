@@ -31,7 +31,7 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             return insertRow(jdbcTemplate, weatherType);
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather_type", 500);
         }
     }
@@ -49,11 +49,11 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
                                 )
                 ));
             } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table weather_type", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather_type", 500);
         }
     }
@@ -66,11 +66,11 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
                 jdbcTemplate.update(WeatherTypeSql.DELETE.getMessage(), weatherTypeId);
             }
             catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table weather_type", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather_type", 500);
         }
     }
@@ -82,11 +82,11 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
             try {
                 jdbcTemplate.update(WeatherTypeSql.UPDATE.getMessage(), description, weatherTypeId);
             } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table weather_type", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather_type", 500);
         }
     }

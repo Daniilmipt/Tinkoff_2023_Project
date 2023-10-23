@@ -35,7 +35,7 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             return insertRow(jdbcTemplate, weatherNew);
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather", 500);
         }
     }
@@ -80,7 +80,7 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 throw e;
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather", 500);
         }
     }
@@ -101,11 +101,11 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                                 )
                 ));
             } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table weather", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather", 500);
         }
     }
@@ -126,11 +126,11 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                                 )
                 ));
             } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table weather", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather", 500);
         }
     }
@@ -145,11 +145,11 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                         regionId
                 );
             } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table weather", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather", 500);
         }
     }
@@ -165,11 +165,11 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                         Date.valueOf(date)
                 );
             } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table weather", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather", 500);
         }
     }
@@ -186,11 +186,11 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                         Date.valueOf(date)
                 );
             } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table weather", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather", 500);
         }
     }
@@ -207,11 +207,11 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                         Date.valueOf(date)
                 );
             } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table weather", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table weather", 500);
         }
     }
@@ -237,14 +237,14 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
         try {
             jdbcTemplate.update(
                     WeatherSql.INSERT.getMessage(),
-                    weatherNew.getRegion_id(),
-                    weatherNew.getType_id(),
+                    weatherNew.getRegionId(),
+                    weatherNew.getTypeId(),
                     weatherNew.getTemperature(),
                     Date.valueOf(weatherNew.getDate())
             );
-            return findIfExists(jdbcTemplate, weatherNew.getRegion_id(), weatherNew.getDate()).get();
+            return findIfExists(jdbcTemplate, weatherNew.getRegionId(), weatherNew.getDate()).get();
         } catch (DataAccessException e){
-            return findIfExists(jdbcTemplate, weatherNew.getRegion_id(), weatherNew.getDate()).get();
+            return findIfExists(jdbcTemplate, weatherNew.getRegionId(), weatherNew.getDate()).get();
         }
     }
 }

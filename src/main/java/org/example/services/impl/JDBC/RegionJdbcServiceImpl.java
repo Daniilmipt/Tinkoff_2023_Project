@@ -48,11 +48,11 @@ public class RegionJdbcServiceImpl implements RegionService {
                                 )
                 ));
             } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table region", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table region", 500);
         }
     }
@@ -64,11 +64,11 @@ public class RegionJdbcServiceImpl implements RegionService {
             try {
                 jdbcTemplate.update(RegionSql.DELETE.getMessage(), regionId);
             } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table region", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table region", 500);
         }
     }
@@ -80,11 +80,11 @@ public class RegionJdbcServiceImpl implements RegionService {
             try {
                 jdbcTemplate.update(RegionSql.UPDATE.getMessage(), name, regionId);
             } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table region", 500);
             }
         } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause() + "; " + e.getMessage();
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
             throw new SqlException(message, "table region", 500);
         }
     }

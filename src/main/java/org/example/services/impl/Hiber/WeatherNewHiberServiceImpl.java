@@ -35,7 +35,7 @@ public class WeatherNewHiberServiceImpl implements WeatherNewService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @Override
     public WeatherNew save(WeatherNew weatherNew){
-        Optional<WeatherNew> weatherNewDataBase = weatherModelHiberRepository.findIfExists(weatherNew.getRegion_id(), weatherNew.getDate());
+        Optional<WeatherNew> weatherNewDataBase = weatherModelHiberRepository.findIfExists(weatherNew.getRegionId(), weatherNew.getDate());
         return weatherNewDataBase.orElseGet(() -> weatherModelHiberRepository.save(weatherNew));
     }
 

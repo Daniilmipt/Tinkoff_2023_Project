@@ -16,8 +16,10 @@ import javax.persistence.*;
 public class WeatherType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "description")
     private String description;
 
     public WeatherType(String description) {

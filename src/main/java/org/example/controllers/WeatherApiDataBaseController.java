@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.sql.SQLException;
-
 @RestController
 @Validated
 @Tag(name="Контроллер для управления внешней погодой", description="Определены Crud методы")
@@ -50,7 +48,7 @@ public class WeatherApiDataBaseController {
     @GetMapping("/external/jdbc")
     public void externalJdbcCurrentTemperature(@RequestParam(value="q", required = false)
                                            @Parameter(description = "q")
-                                           String q) throws SQLException {
+                                           String q) {
         Integer temperature = weatherApiService.getCurrentTemperature(q).asInt();
         weatherNewJdbcService.saveByWeatherTypeAndRegion(new WeatherType("Warm"), new Region(q), temperature);
     }

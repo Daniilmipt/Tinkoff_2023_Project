@@ -2,12 +2,11 @@ package org.example.services;
 
 import org.example.model.WeatherType;
 
-import java.sql.SQLException;
 import java.util.Optional;
 
 public interface WeatherTypeService {
-    WeatherType save(WeatherType weatherType) throws SQLException;
-    Optional<WeatherType> get(Long weatherTypeId) throws SQLException;
-    void delete(Long weatherTypeId) throws SQLException;
-    void update(Long weatherTypeId, String description) throws SQLException;
+    WeatherType save(WeatherType weatherType);
+    Optional<WeatherType> get(Long weatherTypeId);
+    void delete(Long weatherTypeId);
+    void update(Long weatherTypeId, String description);
 }
