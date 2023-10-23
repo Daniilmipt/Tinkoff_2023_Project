@@ -19,7 +19,7 @@ public class Region {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "string")
+    @Column(name = "name")
     private String name;
 
     public Region(String name) {

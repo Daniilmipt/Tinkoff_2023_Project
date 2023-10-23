@@ -21,10 +21,10 @@ public class WeatherNew {
     private Long id;
 
     @Column(name = "region_id")
-    private Long regionId;
+    private Long region_id;
 
     @Column(name = "type_id")
-    private Long typeId;
+    private Long type_id;
 
     @Column(name = "temperature")
     private Integer temperature;
@@ -32,9 +32,9 @@ public class WeatherNew {
     @Column(name = "date")
     private LocalDate date;
 
-    public WeatherNew(Long regionId, Long typeId, Integer temperature, LocalDate date){
-        this.regionId = regionId;
-        this.typeId = typeId;
+    public WeatherNew(Long region_id, Long type_id, Integer temperature, LocalDate date){
+        this.region_id = region_id;
+        this.type_id = type_id;
         this.temperature = temperature;
         this.date = date;
     }

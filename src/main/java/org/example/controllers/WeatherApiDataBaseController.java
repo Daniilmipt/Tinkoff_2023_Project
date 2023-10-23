@@ -52,4 +52,18 @@ public class WeatherApiDataBaseController {
         Integer temperature = weatherApiService.getCurrentTemperature(q).asInt();
         weatherNewJdbcService.saveByWeatherTypeAndRegion(new WeatherType("Warm"), new Region(q), temperature);
     }
+
+    @GetMapping("/external/jdbc/delete")
+    public void externalJdbcDelete(@RequestParam(value="id", required = false)
+                                               @Parameter(description = "id")
+                                               Long id) {
+        weatherNewJdbcService.deleteByRegion(id);
+    }
+
+    @GetMapping("/external/hiber/delete")
+    public void externalHiberDelete(@RequestParam(value="id", required = false)
+                                               @Parameter(description = "id")
+                                               Long id) {
+        weatherNewHiberService.deleteByRegion(id);
+    }
 }

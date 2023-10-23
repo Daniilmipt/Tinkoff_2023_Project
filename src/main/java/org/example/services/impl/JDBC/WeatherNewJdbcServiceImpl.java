@@ -237,14 +237,14 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
         try {
             jdbcTemplate.update(
                     WeatherSql.INSERT.getMessage(),
-                    weatherNew.getRegionId(),
-                    weatherNew.getTypeId(),
+                    weatherNew.getRegion_id(),
+                    weatherNew.getType_id(),
                     weatherNew.getTemperature(),
                     Date.valueOf(weatherNew.getDate())
             );
-            return findIfExists(jdbcTemplate, weatherNew.getRegionId(), weatherNew.getDate()).get();
+            return findIfExists(jdbcTemplate, weatherNew.getRegion_id(), weatherNew.getDate()).get();
         } catch (DataAccessException e){
-            return findIfExists(jdbcTemplate, weatherNew.getRegionId(), weatherNew.getDate()).get();
+            return findIfExists(jdbcTemplate, weatherNew.getRegion_id(), weatherNew.getDate()).get();
         }
     }
 }
