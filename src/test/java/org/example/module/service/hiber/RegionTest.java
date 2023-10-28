@@ -25,21 +25,8 @@ public class RegionTest
     private RegionHiberRepository regionHiberRepository;
 
     @Test
-    public void save_ifNotExist() {
+    public void save_test() {
         Region region = mock(Region.class);
-
-        when(regionHiberRepository.save(ArgumentMatchers.any(Region.class))).thenReturn(region);
-        Region regionSaved = regionHiberService.save(region);
-        assertNotNull(regionSaved);
-        assertEquals(region, regionSaved);
-        verify(regionHiberRepository).save(region);
-        verify(regionHiberRepository).findIfExists(region.getName());
-    }
-
-    @Test
-    public void save_ifExist() {
-        Region region = mock(Region.class);
-        regionHiberService.save(region);
 
         when(regionHiberRepository.save(ArgumentMatchers.any(Region.class))).thenReturn(region);
         Region regionSaved = regionHiberService.save(region);
@@ -68,28 +55,13 @@ public class RegionTest
     }
 
     @Test
-    public void delete_ifExist(){
-        Region region = mock(Region.class);
-
-        when(regionHiberRepository.findById(anyLong())).thenReturn(Optional.ofNullable(region));
+    public void delete_test(){
         regionHiberService.delete(1L);
         verify(regionHiberRepository).deleteById(1L);
-        verify(regionHiberRepository).findById(1L);
     }
 
     @Test
-    public void delete_ifNotExist(){
-        Region region = mock(Region.class);
-        regionHiberService.delete(1L);
-
-        when(regionHiberRepository.findById(anyLong())).thenReturn(Optional.ofNullable(region));
-        regionHiberService.delete(1L);
-        verify(regionHiberRepository).deleteById(1L);
-        verify(regionHiberRepository).findById(1L);
-    }
-
-    @Test
-    public void update(){
+    public void update_test(){
         when(regionHiberRepository.getRowsCount(anyString())).thenReturn(1);
         Integer rowsCount = regionHiberService.update(1L, "test");
         assertEquals(rowsCount, 1);

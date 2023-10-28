@@ -17,6 +17,6 @@ public interface WeatherTypeHiberRepository extends CrudRepository<WeatherType, 
     @Query("select wt from WeatherType wt where wt.description = :description")
     Optional<WeatherType> findIfExists(String description);
 
-    @Query("select count(*) from WeatherType where wt.description = :description")
+    @Query("select count(*) as cnt from WeatherType as wt where wt.description = :description")
     Integer getRowsCount(String description);
 }

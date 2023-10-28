@@ -14,7 +14,6 @@ import java.time.format.DateTimeFormatter;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -32,7 +31,6 @@ public final class WeatherApiTest {
         this.mockMvc.perform(get("/external/jdbc")
                         .param("q", "London")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNumber())
@@ -47,7 +45,6 @@ public final class WeatherApiTest {
         this.mockMvc.perform(get("/external/jdbc")
                         .param("q", "q")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("No matching location found.")))
@@ -58,7 +55,6 @@ public final class WeatherApiTest {
     @Test
     public void saveCurrentTemperature_notRegion_jdbc() throws Exception {
         this.mockMvc.perform(get("/external/jdbc"))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("Parameter q is missing.")))
@@ -71,7 +67,6 @@ public final class WeatherApiTest {
         this.mockMvc.perform(get("/external/hibernate")
                         .param("q", "London")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNumber())
@@ -86,7 +81,6 @@ public final class WeatherApiTest {
         this.mockMvc.perform(get("/external/hibernate")
                         .param("q", "q")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("No matching location found.")))
@@ -97,7 +91,6 @@ public final class WeatherApiTest {
     @Test
     public void saveCurrentTemperature_notRegion_hiber() throws Exception {
         this.mockMvc.perform(get("/external/hibernate"))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("Parameter q is missing.")))

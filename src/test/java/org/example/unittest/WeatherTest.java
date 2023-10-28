@@ -15,7 +15,6 @@ import java.time.format.DateTimeFormatter;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
@@ -30,20 +29,18 @@ public final class WeatherTest {
 
     @Test
     public void externalCurrentTemperature() throws Exception {
-        this.mockMvc.perform(get("/api/wheather/external")
+        mockMvc.perform(get("/api/wheather/external")
                         .param("q", "London")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isNumber());
     }
 
     @Test
     public void externalCurrentTemperature_incorrectRegion() throws Exception {
-        this.mockMvc.perform(get("/api/wheather/external")
+        mockMvc.perform(get("/api/wheather/external")
                         .param("q", "l")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error", is("No matching location found.")))
@@ -53,8 +50,7 @@ public final class WeatherTest {
 
     @Test
     public void externalCurrentTemperature_notRegion() throws Exception {
-        this.mockMvc.perform(get("/api/wheather/external"))
-                .andDo(print())
+        mockMvc.perform(get("/api/wheather/external"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.error", is("Parameter q is missing.")))
@@ -64,31 +60,28 @@ public final class WeatherTest {
 
     @Test
     public void get_test() throws Exception {
-        this.mockMvc.perform(get("/api/wheather/{regionName}", "Moscow")
+        mockMvc.perform(get("/api/wheather/{regionName}", "Chimki")
                         .param("dateTime", "01/01/2014")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0]", is(14)));
+                .andExpect(jsonPath("$[0]", is(-2)));
     }
 
     @Test
     public void get_test_notRegion() throws Exception {
-        this.mockMvc.perform(get("/api/wheather/{regionName}", "M")
+        mockMvc.perform(get("/api/wheather/{regionName}", "M")
                         .param("dateTime", "01/01/2014")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
     public void get_test_incorrectDate() throws Exception {
-        this.mockMvc.perform(get("/api/wheather/{regionName}", "Moscow")
+        mockMvc.perform(get("/api/wheather/{regionName}", "Moscow")
                         .param("dateTime", "0114")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("Incorrect dateTime format")))
@@ -98,8 +91,7 @@ public final class WeatherTest {
 
     @Test
     public void get_test_notData() throws Exception {
-        this.mockMvc.perform(get("/api/wheather/{regionName}", "Moscow"))
-                .andDo(print())
+        mockMvc.perform(get("/api/wheather/{regionName}", "Moscow"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("DateTime can not be null")))
@@ -109,11 +101,10 @@ public final class WeatherTest {
 
     @Test
     public void add_test() throws Exception {
-        this.mockMvc.perform(post("/api/wheather/{regionName}", "Minsk")
+        mockMvc.perform(post("/api/wheather/{regionName}", "Minsk")
                         .param("dateTime", "01/01/2020")
                         .param("temperature", "11")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNumber())
@@ -124,11 +115,10 @@ public final class WeatherTest {
 
     @Test
     public void add_test_incorrectTemperature() throws Exception {
-        this.mockMvc.perform(post("/api/wheather/{regionName}", "Minsk")
+        mockMvc.perform(post("/api/wheather/{regionName}", "Minsk")
                         .param("dateTime", "01/01/2020")
                         .param("temperature", "nothing")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("Temperature must be integer")))
@@ -138,11 +128,10 @@ public final class WeatherTest {
 
     @Test
     public void add_test_incorrectDate() throws Exception {
-        this.mockMvc.perform(post("/api/wheather/{regionName}", "Minsk")
+        mockMvc.perform(post("/api/wheather/{regionName}", "Minsk")
                         .param("dateTime", "01/01/20")
                         .param("temperature", "14")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("Incorrect dateTime format")))
@@ -152,10 +141,9 @@ public final class WeatherTest {
 
     @Test
     public void add_test_noDate() throws Exception {
-        this.mockMvc.perform(post("/api/wheather/{regionName}", "Minsk")
+        mockMvc.perform(post("/api/wheather/{regionName}", "Minsk")
                         .param("temperature", "nothing")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("DateTime can not be null")))
@@ -165,10 +153,9 @@ public final class WeatherTest {
 
     @Test
     public void add_test_noTemperature() throws Exception {
-        this.mockMvc.perform(post("/api/wheather/{regionName}", "Minsk")
+        mockMvc.perform(post("/api/wheather/{regionName}", "Minsk")
                         .param("dateTime", "01/01/2020")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("Temperature can not be null")))
@@ -179,33 +166,30 @@ public final class WeatherTest {
 
     @Test
     public void put_test_notExist() throws Exception {
-        this.mockMvc.perform(put("/api/wheather/{regionName}", "Minsk")
+        mockMvc.perform(put("/api/wheather/{regionName}", "Minsk")
                         .param("dateTime", "01/01/2020")
                         .param("temperature", "11")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", is(1)));
     }
 
     @Test
     public void put_test_exist() throws Exception {
-        this.mockMvc.perform(put("/api/wheather/{regionName}", "Moscow")
+        mockMvc.perform(put("/api/wheather/{regionName}", "Moscow")
                         .param("dateTime", "01/01/2014")
                         .param("temperature", "100")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", is(1)));
     }
 
     @Test
     public void put_test_incorrectData() throws Exception {
-        this.mockMvc.perform(put("/api/wheather/{regionName}", "Moscow")
+        mockMvc.perform(put("/api/wheather/{regionName}", "Moscow")
                         .param("dateTime", "01/01/204")
                         .param("temperature", "100")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("Incorrect dateTime format")))
@@ -215,11 +199,10 @@ public final class WeatherTest {
 
     @Test
     public void put_test_incorrectTemperature() throws Exception {
-        this.mockMvc.perform(put("/api/wheather/{regionName}", "Moscow")
+        mockMvc.perform(put("/api/wheather/{regionName}", "Moscow")
                         .param("dateTime", "01/01/2014")
                         .param("temperature", "nothing")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("Temperature must be integer")))
@@ -229,10 +212,9 @@ public final class WeatherTest {
 
     @Test
     public void put_test_notData() throws Exception {
-        this.mockMvc.perform(put("/api/wheather/{regionName}", "Moscow")
+        mockMvc.perform(put("/api/wheather/{regionName}", "Moscow")
                         .param("temperature", "14")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("DateTime can not be null")))
@@ -242,10 +224,9 @@ public final class WeatherTest {
 
     @Test
     public void put_test_notTemperature() throws Exception {
-        this.mockMvc.perform(put("/api/wheather/{regionName}", "Moscow")
+        mockMvc.perform(put("/api/wheather/{regionName}", "Moscow")
                         .param("dateTime", "01/01/2014")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("Temperature can not be null")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp", is(LocalDate.now().toString())))
@@ -255,15 +236,13 @@ public final class WeatherTest {
 
     @Test
     public void delete_test_exist() throws Exception {
-        this.mockMvc.perform(delete("/api/wheather/{regionName}", "Moscow"))
-                .andDo(print())
+        mockMvc.perform(delete("/api/wheather/{regionName}", "Moscow"))
                 .andExpect(status().isOk());
     }
 
     @Test
     public void delete_test_noExist() throws Exception {
-        this.mockMvc.perform(delete("/api/wheather/{regionName}", "Minsk"))
-                .andDo(print())
+        mockMvc.perform(delete("/api/wheather/{regionName}", "Minsk"))
                 .andExpect(status().isOk());
     }
 

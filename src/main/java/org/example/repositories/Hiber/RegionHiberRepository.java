@@ -17,6 +17,6 @@ public interface RegionHiberRepository extends CrudRepository<Region, Long> {
     @Query("select r from Region r where r.name = :name")
     Optional<Region> findIfExists(String name);
 
-    @Query("select count(*) from Region where r.name = :name")
-    Integer getRowsCount(String description);
+    @Query("select count(*) as cnt from Region as r where r.name = :name")
+    Integer getRowsCount(String name);
 }

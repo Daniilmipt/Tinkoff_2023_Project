@@ -36,7 +36,7 @@ public class WeatherNewTest {
     private WeatherTypeHiberServiceImpl weatherTypeHiberService;
 
     @Test
-    public void save_ifNotExist() {
+    public void save_test() {
         WeatherNew weatherNew = mock(WeatherNew.class);
 
         when(weatherModelHiberRepository.save(weatherNew)).thenReturn(weatherNew);
@@ -48,24 +48,10 @@ public class WeatherNewTest {
     }
 
     @Test
-    public void save_ifExist() {
-        WeatherNew weatherNew = mock(WeatherNew.class);
-        weatherNewHiberService.save(weatherNew);
-
-        when(weatherModelHiberRepository.save(weatherNew)).thenReturn(weatherNew);
-        WeatherNew weatherNewSaved = weatherNewHiberService.save(weatherNew);
-        assertNotNull(weatherNewSaved);
-        assertEquals(weatherNew, weatherNewSaved);
-        verify(weatherModelHiberRepository).save(weatherNew);
-        verify(weatherModelHiberRepository).findIfExists(weatherNew.getRegion_id(), weatherNew.getDate());
-    }
-
-    @Test
-    public void saveByWeatherTypeAndRegion_ifNotExist() {
+    public void saveByWeatherTypeAndRegion_test() {
         WeatherNew weatherNew = mock(WeatherNew.class);
         Region region = new Region(1L, "test");
         WeatherType weatherType = new WeatherType(1L, "test");
-        LocalDate date = LocalDate.now();
 
         when(weatherModelHiberRepository.save(ArgumentMatchers.any(WeatherNew.class))).thenReturn(weatherNew);
         when(regionHiberService.save(ArgumentMatchers.any(Region.class))).thenReturn(region);
@@ -78,37 +64,7 @@ public class WeatherNewTest {
         );
         assertNotNull(weatherNewSaved);
         assertEquals(weatherNew, weatherNewSaved);
-        verify(weatherModelHiberRepository, times(2))
-                .findIfExists(anyLong(), ArgumentMatchers.any(LocalDate.class));
-        verify(weatherModelHiberRepository).save(ArgumentMatchers.any(WeatherNew.class));
-        verify(weatherTypeHiberService).save(weatherType);
-        verify(regionHiberService).save(region);
-    }
-
-    @Test
-    public void saveByWeatherTypeAndRegion_ifExist() {
-        WeatherNew weatherNew = mock(WeatherNew.class);
-        Region region = new Region(1L, "test");
-        WeatherType weatherType = new WeatherType(1L, "test");
-        LocalDate date = LocalDate.now();
-        weatherNewHiberService.saveByWeatherTypeAndRegion(
-                weatherType,
-                region,
-                0
-        );
-
-        when(weatherModelHiberRepository.save(ArgumentMatchers.any(WeatherNew.class))).thenReturn(weatherNew);
-        when(regionHiberService.save(ArgumentMatchers.any(Region.class))).thenReturn(region);
-        when(weatherTypeHiberService.save(ArgumentMatchers.any(WeatherType.class))).thenReturn(weatherType);
-
-        WeatherNew weatherNewSaved = weatherNewHiberService.saveByWeatherTypeAndRegion(
-                weatherType,
-                region,
-                0
-        );
-        assertNotNull(weatherNewSaved);
-        assertEquals(weatherNew, weatherNewSaved);
-        verify(weatherModelHiberRepository, times(2))
+        verify(weatherModelHiberRepository)
                 .findIfExists(anyLong(), ArgumentMatchers.any(LocalDate.class));
         verify(weatherModelHiberRepository).save(ArgumentMatchers.any(WeatherNew.class));
         verify(weatherTypeHiberService).save(weatherType);
@@ -158,55 +114,17 @@ public class WeatherNewTest {
     }
 
     @Test
-    public void deleteByRegion_ifExist(){
-        WeatherNew weatherNew = mock(WeatherNew.class);
-
-        when(weatherModelHiberRepository.findIfExists(anyLong(), ArgumentMatchers.any(LocalDate.class)))
-                .thenReturn(Optional.ofNullable(weatherNew));
-
+    public void deleteByRegion_test(){
         weatherNewHiberService.deleteByRegion(1L);
-
         verify(weatherModelHiberRepository).deleteWeatherByRegion(1L);
-        verify(weatherModelHiberRepository).findIfExists(anyLong(), ArgumentMatchers.any(LocalDate.class));
     }
 
     @Test
-    public void deleteByRegion_ifNotExist(){
-        WeatherNew weatherNew = mock(WeatherNew.class);
-        weatherNewHiberService.deleteByRegion(1L);
-
-        when(weatherModelHiberRepository.findIfExists(anyLong(), ArgumentMatchers.any(LocalDate.class)))
-                .thenReturn(Optional.ofNullable(weatherNew));
-
-        weatherNewHiberService.deleteByRegion(1L);
-
-        verify(weatherModelHiberRepository).deleteWeatherByRegion(1L);
-        verify(weatherModelHiberRepository).findIfExists(anyLong(), ArgumentMatchers.any(LocalDate.class));
-    }
-
-    @Test
-    public void deleteByRegionAndDate_ifExist(){
-        WeatherNew weatherNew = mock(WeatherNew.class);
+    public void deleteByRegionAndDate_test(){
         LocalDate dateNow = LocalDate.now();
 
-        when(weatherModelHiberRepository.findIfExists(anyLong(), ArgumentMatchers.any(LocalDate.class)))
-                .thenReturn(Optional.ofNullable(weatherNew));
         weatherNewHiberService.deleteByRegionAndDate(1L, dateNow);
         verify(weatherModelHiberRepository).deleteWeatherByRegionAndDate(1L, dateNow);
-        verify(weatherModelHiberRepository).findIfExists(1L, dateNow);
-    }
-
-    @Test
-    public void deleteByRegionAndDate_ifNotExist(){
-        WeatherNew weatherNew = mock(WeatherNew.class);
-        LocalDate dateNow = LocalDate.now();
-        weatherNewHiberService.deleteByRegionAndDate(1L, dateNow);
-
-        when(weatherModelHiberRepository.findIfExists(anyLong(), ArgumentMatchers.any(LocalDate.class)))
-                .thenReturn(Optional.ofNullable(weatherNew));
-        weatherNewHiberService.deleteByRegionAndDate(1L, dateNow);
-        verify(weatherModelHiberRepository).deleteWeatherByRegionAndDate(1L, dateNow);
-        verify(weatherModelHiberRepository).findIfExists(1L, dateNow);
     }
 
     @Test

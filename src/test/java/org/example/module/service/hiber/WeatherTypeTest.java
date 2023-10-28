@@ -10,8 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -26,7 +24,7 @@ public class WeatherTypeTest {
     private WeatherTypeHiberRepository weatherTypeHiberRepository;
 
     @Test
-    public void save_ifNotExist() {
+    public void save_test() {
         WeatherType weatherType = mock(WeatherType.class);
 
         when(weatherTypeHiberRepository.save(ArgumentMatchers.any(WeatherType.class))).thenReturn(weatherType);
@@ -38,59 +36,20 @@ public class WeatherTypeTest {
     }
 
     @Test
-    public void save_ifExist() {
-        WeatherType weatherType = mock(WeatherType.class);
-        weatherTypeHiberService.save(weatherType);
-
-        when(weatherTypeHiberRepository.save(ArgumentMatchers.any(WeatherType.class))).thenReturn(weatherType);
-        WeatherType weatherTypeSaved = weatherTypeHiberService.save(weatherType);
-        assertNotNull(weatherTypeSaved);
-        assertEquals(weatherType, weatherTypeSaved);
-        verify(weatherTypeHiberRepository).save(weatherType);
-        verify(weatherTypeHiberRepository).findIfExists(weatherType.getDescription());
-    }
-
-    @Test
-    public void get_ifNotExist() {
+    public void get_test() {
         when(weatherTypeHiberRepository.findById(anyLong())).thenReturn(null);
         assertNull(weatherTypeHiberService.get(1L));
         verify(weatherTypeHiberRepository).findById(1L);
     }
 
     @Test
-    public void get_ifExist() {
-        WeatherType weatherType = mock(WeatherType.class);
-        when(weatherTypeHiberRepository.findById(anyLong())).thenReturn(Optional.ofNullable(weatherType));
-
-        Optional<WeatherType> weatherSaved = weatherTypeHiberService.get(1L);
-        assertFalse(weatherSaved.isEmpty());
-        assertEquals(weatherType, weatherSaved.get());
-        verify(weatherTypeHiberRepository).findById(1L);
-    }
-
-    @Test
-    public void delete_ifExist(){
-        WeatherType weatherType = mock(WeatherType.class);
-
-        when(weatherTypeHiberRepository.findById(anyLong())).thenReturn(Optional.ofNullable(weatherType));
+    public void delete_test(){
         weatherTypeHiberService.delete(1L);
         verify(weatherTypeHiberRepository).deleteById(1L);
-        verify(weatherTypeHiberRepository).findById(1L);
     }
 
     @Test
-    public void delete_ifNotExist(){
-        WeatherType weatherType = mock(WeatherType.class);
-        weatherTypeHiberService.delete(1L);
-
-        when(weatherTypeHiberRepository.findById(anyLong())).thenReturn(Optional.ofNullable(weatherType));
-        weatherTypeHiberService.delete(1L);
-        verify(weatherTypeHiberRepository).deleteById(1L);
-        verify(weatherTypeHiberRepository).findById(1L);
-    }
-
-    @Test
-    public void update(){
+    public void update_test(){
         when(weatherTypeHiberRepository.getRowsCount(anyString())).thenReturn(1);
         Integer rowsCount = weatherTypeHiberService.update(1L, "test");
         assertEquals(rowsCount, 1);

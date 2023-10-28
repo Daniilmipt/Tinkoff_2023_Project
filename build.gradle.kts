@@ -34,9 +34,11 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("org.liquibase:liquibase-core:4.24.0")
     implementation("com.h2database:h2")
+    implementation("org.testcontainers:testcontainers:1.16.3")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.testcontainers:junit-jupiter:1.16.3")
 }
 
 tasks.withType<Test> {
