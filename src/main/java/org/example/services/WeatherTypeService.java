@@ -8,5 +8,5 @@ public interface WeatherTypeService {
     WeatherType save(WeatherType weatherType);
     Optional<WeatherType> get(Long weatherTypeId);
     void delete(Long weatherTypeId);
-    void update(Long weatherTypeId, String description);
+    Integer update(Long weatherTypeId, String description);
 }

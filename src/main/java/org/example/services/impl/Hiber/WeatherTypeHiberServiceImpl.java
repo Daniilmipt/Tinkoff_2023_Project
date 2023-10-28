@@ -37,7 +37,8 @@ public class WeatherTypeHiberServiceImpl implements WeatherTypeService {
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Override
-    public void update(Long weatherTypeId, String description){
+    public Integer update(Long weatherTypeId, String description){
         weatherTypeHiberRepository.updateWeatherTypeById(weatherTypeId, description);
+        return weatherTypeHiberRepository.getRowsCount(description);
     }
 }

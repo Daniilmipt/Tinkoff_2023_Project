@@ -74,11 +74,15 @@ public class RegionJdbcServiceImpl implements RegionService {
     }
 
     @Override
-    public void update(Long regionId, String name) {
+    public Integer update(Long regionId, String name) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             try {
                 jdbcTemplate.update(RegionSql.UPDATE.getMessage(), name, regionId);
+                return jdbcTemplate.queryForObject(RegionSql.ROWS_COUNT.getMessage(),
+                        new Object[]{name}, (rs, rowNum) ->
+                                rs.getInt("cnt")
+                );
             } catch (DataAccessException e){
                 String message = "Class: " + e.getClass() + "; " + e.getCause();
                 throw new SqlException(message, "table region", 500);

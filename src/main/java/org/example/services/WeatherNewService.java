@@ -14,7 +14,7 @@ public interface WeatherNewService {
     Optional<WeatherNew> get(Long weatherModel_id);
     void deleteByRegion(Long regionId);
     void deleteByRegionAndDate(Long regionId, LocalDate date);
-    void updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date);
-    void updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date);
+    Integer updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date);
+    Integer updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date);
 
 }

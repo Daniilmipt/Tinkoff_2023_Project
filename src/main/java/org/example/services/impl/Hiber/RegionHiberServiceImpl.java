@@ -38,8 +38,9 @@ public class RegionHiberServiceImpl implements RegionService {
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Override
-    public void update(Long regionId, String name){
+    public Integer update(Long regionId, String name){
         regionHiberRepository.updateRegionById(regionId, name);
+        return regionHiberRepository.getRowsCount(name);
     }
 
 }

@@ -7,6 +7,7 @@ public enum WeatherSql {
     SELECT_BY_REGION_DATE("select * from weather where region_id = ? and date = ? limit 1"),
     SELECT("select * from weather where id = ? limit 1"),
     SELECT_IF_EXISTS("select * from weather where region_id = ? and date = ?"),
+    ROWS_COUNT("select count(*) as cnt from weather where region_id = ? and date = ?"),
     UPDATE_TEMPERATURE("update weather set temperature = ? where region_id = ? and date = ?"),
     UPDATE_WEATHER("update weather set type_id = ? where region_id = ? and date = ?"),
     DELETE_BY_REGION("delete from weather where region_id = ?"),

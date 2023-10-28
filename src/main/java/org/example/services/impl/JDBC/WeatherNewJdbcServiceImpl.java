@@ -1,5 +1,6 @@
 package org.example.services.impl.JDBC;
 
+import org.example.enums.jdbc.RegionSql;
 import org.example.enums.jdbc.WeatherSql;
 import org.example.exceptions.SqlException;
 import org.example.exceptions.weatherApi.ResponseException;
@@ -175,7 +176,7 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
     }
 
     @Override
-    public void updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date) {
+    public Integer updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             try {
@@ -184,6 +185,10 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                         temperature,
                         region_id,
                         Date.valueOf(date)
+                );
+                return jdbcTemplate.queryForObject(WeatherSql.ROWS_COUNT.getMessage(),
+                        new Object[]{region_id, date}, (rs, rowNum) ->
+                                rs.getInt("cnt")
                 );
             } catch (DataAccessException e){
                 String message = "Class: " + e.getClass() + "; " + e.getCause();
@@ -196,7 +201,7 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
     }
 
     @Override
-    public void updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date) {
+    public Integer updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             try {
@@ -205,6 +210,10 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                         type_id,
                         region_id,
                         Date.valueOf(date)
+                );
+                return jdbcTemplate.queryForObject(WeatherSql.ROWS_COUNT.getMessage(),
+                        new Object[]{region_id, date}, (rs, rowNum) ->
+                                rs.getInt("cnt")
                 );
             } catch (DataAccessException e){
                 String message = "Class: " + e.getClass() + "; " + e.getCause();

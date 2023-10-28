@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum RegionSql {
     SELECT("select * from region where id = ? limit 1"),
     SELECT_IF_EXISTS("select * from region where name = ? limit 1"),
+    ROWS_COUNT("select count(*) as cnt from region where name = ?"),
     UPDATE("update region set name = ? where id = ?"),
     DELETE("delete from region where id = ?"),
     INSERT("insert into region(name) values (?)");

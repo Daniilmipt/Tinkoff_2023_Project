@@ -65,13 +65,15 @@ public class WeatherNewHiberServiceImpl implements WeatherNewService {
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @Override
-    public void updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date){
+    public Integer updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date){
         weatherModelHiberRepository.updateTemperatureByRegionAndDate(region_id, temperature, date);
+        return weatherModelHiberRepository.getRowsCount(region_id, date);
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @Override
-    public void updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date){
+    public Integer updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date){
         weatherModelHiberRepository.updateTypeByRegionAndDate(region_id, type_id, date);
+        return weatherModelHiberRepository.getRowsCount(region_id, date);
     }
 }

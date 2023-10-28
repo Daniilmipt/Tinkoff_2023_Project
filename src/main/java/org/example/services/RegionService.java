@@ -8,5 +8,5 @@ public interface RegionService {
     Region save(Region region);
     Optional<Region> get(Long regionId);
     void delete(Long regionId);
-    void update(Long regionId, String name);
+    Integer update(Long regionId, String name);
 }

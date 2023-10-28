@@ -32,4 +32,7 @@ public interface WeatherModelHiberRepository extends CrudRepository<WeatherNew, 
 
     @Query("select wn from WeatherNew as wn where wn.region_id = :region_id and wn.date=:date")
     Optional<WeatherNew> findIfExists(Long region_id, LocalDate date);
+
+    @Query("select count(*) from WeatherNew where wn.region_id = :region_id and wn.date=:date")
+    Integer getRowsCount(Long region_id, LocalDate date);
 }
