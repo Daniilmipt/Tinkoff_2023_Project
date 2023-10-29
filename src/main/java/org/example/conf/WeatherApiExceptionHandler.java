@@ -67,6 +67,7 @@ public class WeatherApiExceptionHandler {
                 HttpStatus.valueOf(e.getRawStatusCode())
         );
     }
+
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Object> handleIllegalStateException(IllegalStateException e){
         return ResponseErrorDto.getErrorResponse(
