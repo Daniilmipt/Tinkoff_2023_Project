@@ -34,8 +34,8 @@ public class WeatherController {
     )
     @GetMapping("/external")
     public ResponseEntity<Object> externalCurrentTemperature(@RequestParam(value="q", required = false)
-                                           @Parameter(description = "q")
-                                            String q){
+                                                             @Parameter(description = "q")
+                                                             String q){
         return new ResponseEntity<>(weatherApiService.getCurrentTemperature(q), HttpStatus.OK);
     }
 
@@ -46,7 +46,7 @@ public class WeatherController {
     @GetMapping("/{regionName}")
     public ResponseEntity<Object> get(@PathVariable
                                       @Parameter(description = "Название региона")
-                                          String regionName,
+                                      String regionName,
                                       @RequestParam(value="dateTime", required = false)
                                       @Parameter(description = "Дата и время")
                                       String dateRaw){

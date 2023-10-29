@@ -30,9 +30,10 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-ui:1.6.0")
     implementation("org.springdoc:springdoc-openapi-kotlin:1.6.0")
     implementation("io.github.resilience4j:resilience4j-spring-boot2:1.7.0")
-    compileOnly("org.projectlombok:lombok")
-    annotationProcessor("org.projectlombok:lombok")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("com.zaxxer:HikariCP:5.0.1")
+    implementation("org.liquibase:liquibase-core:4.24.0")
+    implementation("com.h2database:h2")
 }
 
 tasks.withType<Test> {
