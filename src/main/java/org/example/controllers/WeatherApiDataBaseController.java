@@ -39,7 +39,7 @@ public class WeatherApiDataBaseController {
             description = "Получить температуру в цельсиях на сегодняшнюю дату по заданному городу"
     )
     @GetMapping("/external/hibernate")
-    public ResponseEntity<Object> externalCurrentTemperature(@RequestParam(value="q", required = false)
+    public ResponseEntity<Object> getExternalCurrentTemperature(@RequestParam(value="q", required = false)
                                                              @Parameter(description = "q")
                                                              String q){
         Integer temperature = weatherApiService.getCurrentTemperature(q).asInt();
@@ -52,7 +52,7 @@ public class WeatherApiDataBaseController {
             description = "Получить температуру в цельсиях на сегодняшнюю дату по заданному городу"
     )
     @GetMapping("/external/jdbc")
-    public ResponseEntity<Object> externalJdbcCurrentTemperature(@RequestParam(value="q", required = false)
+    public ResponseEntity<Object> getEexternalJdbcCurrentTemperature(@RequestParam(value="q", required = false)
                                            @Parameter(description = "q")
                                            String q) throws SQLException {
         Integer temperature = weatherApiService.getCurrentTemperature(q).asInt();
