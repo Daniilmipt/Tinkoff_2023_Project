@@ -19,6 +19,10 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
         this.dataSource = dataSource;
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
     public WeatherTypeDto save(WeatherType weatherType) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -28,6 +32,9 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
         }
     }
 
+    /*
+    READ_UNCOMMITTED, т.к. в таблицы нечасто вносят изменения посредством update
+     */
     @Override
     public Optional<WeatherTypeDto> get(Long weatherTypeId) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -45,6 +52,10 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
         }
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
     public void delete(Long weatherTypeId) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -57,6 +68,10 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
         }
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
     public void update(Long weatherTypeId, String description) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {

@@ -19,6 +19,10 @@ public class RegionJdbcServiceImpl implements RegionService {
         this.dataSource = dataSource;
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
     public RegionDto save(Region region) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -27,6 +31,10 @@ public class RegionJdbcServiceImpl implements RegionService {
         }
     }
 
+
+    /*
+    READ_UNCOMMITTED, т.к. в таблицы нечасто вносят изменения посредством update
+     */
     @Override
     public Optional<RegionDto> get(Long regionId) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -43,6 +51,10 @@ public class RegionJdbcServiceImpl implements RegionService {
         }
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
     public void delete(Long regionId) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -55,6 +67,10 @@ public class RegionJdbcServiceImpl implements RegionService {
         }
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
     public void update(Long regionId, String name) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {

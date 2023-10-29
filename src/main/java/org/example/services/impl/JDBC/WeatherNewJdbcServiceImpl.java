@@ -25,6 +25,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
         this.dataSource = dataSource;
     }
 
+    /*
+    взял SERIALIZABLE, т.к. часто будут вставлять данные
+     */
     @Override
     public WeatherDto save(WeatherNew weatherNew) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -34,10 +37,14 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
     }
 
 
+    /*
+    взял SERIALIZABLE, т.к. часто будут вставлять данные
+     */
     @Override
     public WeatherDto saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             Savepoint save = connection.setSavepoint();
             try {
                 RegionDto regionInserted = RegionJdbcServiceImpl.insertRow(connection, region);
@@ -75,6 +82,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
         }
     }
 
+    /*
+    READ_UNCOMMITTED, т.к. в таблицы нечасто вносят изменения посредством update
+     */
     @Override
     public Optional<WeatherDto> getByRegionAndDate(Long region_id, LocalDate date) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -98,6 +108,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
         }
     }
 
+    /*
+    READ_UNCOMMITTED, т.к. в таблицы нечасто вносят изменения посредством update
+     */
     @Override
     public Optional<WeatherDto> get(Long weatherModel_id) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -121,6 +134,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
         }
     }
 
+    /*
+    взял SERIALIZABLE, т.к. часто будут вставлять данные
+     */
     @Override
     public void deleteByRegion(Long regionId) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -132,6 +148,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
         }
     }
 
+    /*
+    взял SERIALIZABLE, т.к. часто будут вставлять данные
+     */
     @Override
     public void deleteByRegionAndDate(Long regionId, LocalDate date) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -145,6 +164,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
         }
     }
 
+    /*
+    взял SERIALIZABLE, т.к. часто будут вставлять данные
+     */
     @Override
     public void updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
@@ -159,6 +181,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
         }
     }
 
+    /*
+    взял SERIALIZABLE, т.к. часто будут вставлять данные
+     */
     @Override
     public void updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {

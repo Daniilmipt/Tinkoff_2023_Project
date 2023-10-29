@@ -19,6 +19,10 @@ public class RegionHiberServiceImpl implements RegionService {
         this.regionHiberRepository = regionHiberRepository;
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+    потому что в таблицы редко что-то добавляют
+     */
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Override
     public RegionDto save(Region region){
@@ -26,18 +30,29 @@ public class RegionHiberServiceImpl implements RegionService {
         return RegionMapper.entityToDto(regionDataBase.orElseGet(() -> regionHiberRepository.save(region)));
     }
 
+    /*
+     взял READ_UNCOMMITTED, т.к. в таблицы нечасто вносят изменения посредством update
+     */
     @Transactional(isolation= Isolation.READ_UNCOMMITTED, readOnly = true)
     @Override
     public Optional<RegionDto> get(Long regionId){
         return RegionMapper.optionalEntityToDto(regionHiberRepository.findById(regionId));
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+    потому что в таблицы редко что-то добавляют
+     */
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Override
     public void delete(Long regionId){
         regionHiberRepository.deleteById(regionId);
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+    потому что в таблицы редко что-то добавляют
+     */
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Override
     public void update(Long regionId, String name){
