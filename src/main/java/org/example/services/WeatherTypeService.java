@@ -1,13 +1,14 @@
 package org.example.services;
 
+import org.example.dto.WeatherTypeDto;
 import org.example.model.WeatherType;
 
 import java.sql.SQLException;
 import java.util.Optional;
 
 public interface WeatherTypeService {
-    WeatherType save(WeatherType weatherType) throws SQLException;
-    Optional<WeatherType> get(Long weatherTypeId) throws SQLException;
+    WeatherTypeDto save(WeatherType weatherType) throws SQLException;
+    Optional<WeatherTypeDto> get(Long weatherTypeId) throws SQLException;
     void delete(Long weatherTypeId) throws SQLException;
     void update(Long weatherTypeId, String description) throws SQLException;
 }

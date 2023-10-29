@@ -1,5 +1,7 @@
 package org.example.services.impl.Hiber;
 
+import org.example.dto.WeatherTypeDto;
+import org.example.mapper.WeatherTypeMapper;
 import org.example.model.WeatherType;
 import org.example.repositories.Hiber.WeatherTypeHiberRepository;
 import org.example.services.WeatherTypeService;
@@ -19,14 +21,14 @@ public class WeatherTypeHiberServiceImpl implements WeatherTypeService {
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Override
-    public WeatherType save(WeatherType weatherType){
-        Optional<WeatherType> weatherTypeDataBase = weatherTypeHiberRepository.findIfExists(weatherType.getDescription());
-        return weatherTypeDataBase.orElseGet(() -> weatherTypeHiberRepository.save(weatherType));
+    public WeatherTypeDto save(WeatherType weatherType){
+        Optional<WeatherType> weatherTypeDataBase = weatherTypeHiberRepository.findWeatherTypeByDescription(weatherType.getDescription());
+        return WeatherTypeMapper.entityToDto(weatherTypeDataBase.orElseGet(() -> weatherTypeHiberRepository.save(weatherType)));
     }
 
     @Transactional(isolation= Isolation.READ_UNCOMMITTED, readOnly = true)
-    public Optional<WeatherType> get(Long weatherTypeId){
-        return weatherTypeHiberRepository.findById(weatherTypeId);
+    public Optional<WeatherTypeDto> get(Long weatherTypeId){
+        return WeatherTypeMapper.optionalEntityToDto(weatherTypeHiberRepository.findById(weatherTypeId));
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)

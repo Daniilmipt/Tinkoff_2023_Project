@@ -1,6 +1,8 @@
 package org.example.services.impl.JDBC;
 
+import org.example.dto.WeatherTypeDto;
 import org.example.enums.jdbc.WeatherTypeSql;
+import org.example.mapper.WeatherTypeMapper;
 import org.example.model.WeatherType;
 import org.example.services.WeatherTypeService;
 import org.springframework.stereotype.Service;
@@ -18,18 +20,16 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
     }
 
     @Override
-    public WeatherType save(WeatherType weatherType) throws SQLException {
+    public WeatherTypeDto save(WeatherType weatherType) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            WeatherType weatherTypeInserted = insertRow(connection, weatherType);
-            connection.close();
-            return weatherTypeInserted;
+            return insertRow(connection, weatherType);
         }
     }
 
     @Override
-    public Optional<WeatherType> get(Long weatherTypeId) throws SQLException {
+    public Optional<WeatherTypeDto> get(Long weatherTypeId) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 
@@ -40,8 +40,7 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
                 if (rs.next()) {
                     weatherType = Optional.of(new WeatherType(rs.getLong("id"), rs.getString("description")));
                 }
-                closeResources(selectStatement, connection);
-                return weatherType;
+                return WeatherTypeMapper.optionalEntityToDto(weatherType);
             }
         }
     }
@@ -54,7 +53,6 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
             try (PreparedStatement deleteStatement = connection.prepareStatement(WeatherTypeSql.DELETE.getMessage())) {
                 deleteStatement.setLong(1, weatherTypeId);
                 deleteStatement.execute();
-                closeResources(deleteStatement, connection);
             }
         }
     }
@@ -68,30 +66,23 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
                 updateStatement.setString(1, description);
                 updateStatement.setLong(2, weatherTypeId);
                 updateStatement.execute();
-                closeResources(updateStatement, connection);
             }
         }
     }
 
-    public static WeatherType insertRow(Connection connection, WeatherType weatherType) throws SQLException {
-        Optional<WeatherType> weatherTypeDataBase = findIfExists(connection, weatherType.getDescription());
+    public static WeatherTypeDto insertRow(Connection connection, WeatherType weatherType) throws SQLException {
+        Optional<WeatherTypeDto> weatherTypeDataBase = findIfExists(connection, weatherType.getDescription());
         if (weatherTypeDataBase.isEmpty()) {
             try (PreparedStatement insertStatement = connection.prepareStatement(WeatherTypeSql.INSERT.getMessage())) {
                 insertStatement.setString(1, weatherType.getDescription());
                 insertStatement.execute();
-                insertStatement.close();
                 return findIfExists(connection, weatherType.getDescription()).get();
             }
         }
         return weatherTypeDataBase.get();
     }
 
-    private static void closeResources(Statement statement, Connection connection) throws SQLException {
-        statement.close();
-        connection.close();
-    }
-
-    public static Optional<WeatherType> findIfExists(Connection connection, String description) throws SQLException {
+    public static Optional<WeatherTypeDto> findIfExists(Connection connection, String description) throws SQLException {
         try (PreparedStatement selectStatement = connection.prepareStatement(WeatherTypeSql.SELECT_IF_EXISTS.getMessage())) {
             selectStatement.setString(1, description);
             ResultSet rs = selectStatement.executeQuery();
@@ -99,7 +90,7 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
             if (rs.next()) {
                 weatherType = Optional.of(new WeatherType(rs.getLong("id"), rs.getString("description")));
             }
-            return weatherType;
+            return WeatherTypeMapper.optionalEntityToDto(weatherType);
         }
     }
 }

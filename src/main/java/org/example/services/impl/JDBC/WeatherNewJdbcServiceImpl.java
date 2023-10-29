@@ -1,7 +1,11 @@
 package org.example.services.impl.JDBC;
 
+import org.example.dto.RegionDto;
+import org.example.dto.WeatherDto;
+import org.example.dto.WeatherTypeDto;
 import org.example.enums.jdbc.WeatherSql;
 import org.example.exceptions.weatherApi.ResponseException;
+import org.example.mapper.WeatherMapper;
 import org.example.model.Region;
 import org.example.model.WeatherNew;
 import org.example.model.WeatherType;
@@ -22,26 +26,24 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
     }
 
     @Override
-    public WeatherNew save(WeatherNew weatherNew) throws SQLException {
+    public WeatherDto save(WeatherNew weatherNew) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            WeatherNew weatherNewInserted = insertRow(connection, weatherNew);
-            connection.close();
-            return weatherNewInserted;
+            return insertRow(connection, weatherNew);
         }
     }
 
 
     @Override
-    public WeatherNew saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature) throws SQLException {
+    public WeatherDto saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             Savepoint save = connection.setSavepoint();
             try {
-                Region regionInserted = RegionJdbcServiceImpl.insertRow(connection, region);
+                RegionDto regionInserted = RegionJdbcServiceImpl.insertRow(connection, region);
                 Savepoint saveRegion = connection.setSavepoint();
                 try {
-                    WeatherType weatherTypeInserted = WeatherTypeJdbcServiceImpl.insertRow(connection, weatherType);
+                    WeatherTypeDto weatherTypeInserted = WeatherTypeJdbcServiceImpl.insertRow(connection, weatherType);
                     Savepoint saveRegionAndType = connection.setSavepoint();
                     try {
                         WeatherNew weatherNew = new WeatherNew(
@@ -50,9 +52,8 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                                 temperature,
                                 LocalDate.now()
                         );
-                        WeatherNew weatherNewInserted = insertRow(connection, weatherNew);
+                        WeatherDto weatherNewInserted = insertRow(connection, weatherNew);
                         connection.commit();
-                        connection.close();
                         return weatherNewInserted;
                     } catch (Exception e) {
                         connection.rollback(saveRegionAndType);
@@ -61,17 +62,13 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 }
                 catch (Exception e) {
                     if (!(e instanceof ResponseException)){
-                        System.out.println("a");
                         connection.rollback(saveRegion);
-                        connection.close();
                     }
                     throw e;
                 }
             } catch (Exception e) {
                 if (!(e instanceof ResponseException)){
-                    System.out.println("a");
                     connection.rollback(save);
-                    connection.close();
                 }
                 throw e;
             }
@@ -79,7 +76,7 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
     }
 
     @Override
-    public Optional<WeatherNew> getByRegionAndDate(Long region_id, LocalDate date) throws SQLException {
+    public Optional<WeatherDto> getByRegionAndDate(Long region_id, LocalDate date) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
             try (PreparedStatement selectStatement = connection.prepareStatement(WeatherSql.SELECT_BY_REGION_DATE.getMessage())) {
@@ -96,14 +93,13 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                             rs.getDate("date").toLocalDate()
                     ));
                 }
-                closeResources(selectStatement, connection);
-                return weatherNew;
+                return WeatherMapper.optionalEntityToDto(weatherNew);
             }
         }
     }
 
     @Override
-    public Optional<WeatherNew> get(Long weatherModel_id) throws SQLException {
+    public Optional<WeatherDto> get(Long weatherModel_id) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 
@@ -120,8 +116,7 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                             rs.getDate("date").toLocalDate()
                     ));
                 }
-                closeResources(selectStatement, connection);
-                return weatherNew;
+                return WeatherMapper.optionalEntityToDto(weatherNew);
             }
         }
     }
@@ -133,7 +128,6 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
             try (PreparedStatement deleteStatement = connection.prepareStatement(WeatherSql.DELETE_BY_REGION.getMessage())) {
                 deleteStatement.setLong(1, regionId);
                 deleteStatement.execute();
-                closeResources(deleteStatement, connection);
             }
         }
     }
@@ -147,7 +141,6 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 deleteStatement.setLong(1, regionId);
                 deleteStatement.setDate(2, Date.valueOf(date));
                 deleteStatement.execute();
-                closeResources(deleteStatement, connection);
             }
         }
     }
@@ -162,7 +155,6 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 updateStatement.setLong(2, region_id);
                 updateStatement.setDate(3, Date.valueOf(date));
                 updateStatement.execute();
-                closeResources(updateStatement, connection);
             }
         }
     }
@@ -177,17 +169,11 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 updateStatement.setLong(2, region_id);
                 updateStatement.setDate(3, Date.valueOf(date));
                 updateStatement.execute();
-                closeResources(updateStatement, connection);
             }
         }
     }
 
-    private static void closeResources(Statement statement, Connection connection) throws SQLException {
-        statement.close();
-        connection.close();
-    }
-
-    private static Optional<WeatherNew> findIfExists(Connection connection, Long region_id, LocalDate date) throws SQLException {
+    private static Optional<WeatherDto> findIfExists(Connection connection, Long region_id, LocalDate date) throws SQLException {
         try (PreparedStatement selectStatement = connection.prepareStatement(WeatherSql.SELECT_IF_EXISTS.getMessage())) {
             selectStatement.setLong(1, region_id);
             selectStatement.setDate(2, Date.valueOf(date));
@@ -202,22 +188,20 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                         rs.getDate("date").toLocalDate()
                 ));
             }
-            selectStatement.close();
-            return weatherNew;
+            return WeatherMapper.optionalEntityToDto(weatherNew);
         }
     }
 
-    public static WeatherNew insertRow(Connection connection, WeatherNew weatherNew) throws SQLException {
-        Optional<WeatherNew> weatherNewDataBase = findIfExists(connection, weatherNew.getRegion_id(), weatherNew.getDate());
+    public static WeatherDto insertRow(Connection connection, WeatherNew weatherNew) throws SQLException {
+        Optional<WeatherDto> weatherNewDataBase = findIfExists(connection, weatherNew.getRegionId(), weatherNew.getDate());
         if (weatherNewDataBase.isEmpty()) {
             try (PreparedStatement insertStatement = connection.prepareStatement(WeatherSql.INSERT.getMessage())) {
-                insertStatement.setLong(1, weatherNew.getRegion_id());
-                insertStatement.setLong(2, weatherNew.getType_id());
+                insertStatement.setLong(1, weatherNew.getRegionId());
+                insertStatement.setLong(2, weatherNew.getTypeId());
                 insertStatement.setInt(3, weatherNew.getTemperature());
                 insertStatement.setDate(4, Date.valueOf(weatherNew.getDate()));
                 insertStatement.execute();
-                insertStatement.close();
-                return findIfExists(connection, weatherNew.getRegion_id(), weatherNew.getDate()).get();
+                return findIfExists(connection, weatherNew.getRegionId(), weatherNew.getDate()).get();
             }
         }
         return weatherNewDataBase.get();

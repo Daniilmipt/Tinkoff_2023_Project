@@ -3,11 +3,14 @@ package org.example.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.example.dto.WeatherDto;
 import org.example.model.Region;
 import org.example.model.WeatherType;
 import org.example.services.impl.Hiber.WeatherNewHiberServiceImpl;
 import org.example.services.impl.JDBC.WeatherNewJdbcServiceImpl;
 import org.example.services.impl.WeatherClientServiceImpl;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,11 +39,12 @@ public class WeatherApiDataBaseController {
             description = "Получить температуру в цельсиях на сегодняшнюю дату по заданному городу"
     )
     @GetMapping("/external/hibernate")
-    public void externalCurrentTemperature(@RequestParam(value="q", required = false)
+    public ResponseEntity<Object> externalCurrentTemperature(@RequestParam(value="q", required = false)
                                                              @Parameter(description = "q")
                                                              String q){
         Integer temperature = weatherApiService.getCurrentTemperature(q).asInt();
-        weatherNewHiberService.saveByWeatherTypeAndRegion(new WeatherType("Warm"), new Region(q), temperature);
+        WeatherDto weatherDto = weatherNewHiberService.saveByWeatherTypeAndRegion(new WeatherType("Warm"), new Region(q), temperature);
+        return new ResponseEntity<>(weatherDto, HttpStatus.OK);
     }
 
     @Operation(
@@ -48,10 +52,11 @@ public class WeatherApiDataBaseController {
             description = "Получить температуру в цельсиях на сегодняшнюю дату по заданному городу"
     )
     @GetMapping("/external/jdbc")
-    public void externalJdbcCurrentTemperature(@RequestParam(value="q", required = false)
+    public ResponseEntity<Object> externalJdbcCurrentTemperature(@RequestParam(value="q", required = false)
                                            @Parameter(description = "q")
                                            String q) throws SQLException {
         Integer temperature = weatherApiService.getCurrentTemperature(q).asInt();
-        weatherNewJdbcService.saveByWeatherTypeAndRegion(new WeatherType("Warm"), new Region(q), temperature);
+        WeatherDto weatherDto = weatherNewJdbcService.saveByWeatherTypeAndRegion(new WeatherType("Warm"), new Region(q), temperature);
+        return new ResponseEntity<>(weatherDto, HttpStatus.OK);
     }
 }

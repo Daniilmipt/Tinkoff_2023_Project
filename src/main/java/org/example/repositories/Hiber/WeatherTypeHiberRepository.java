@@ -14,6 +14,5 @@ public interface WeatherTypeHiberRepository extends CrudRepository<WeatherType, 
     @Modifying
     void updateWeatherTypeById(Long id, String description);
 
-    @Query("select wt from WeatherType wt where wt.description = :description")
-    Optional<WeatherType> findIfExists(String description);
+    Optional<WeatherType> findWeatherTypeByDescription(String description);
 }

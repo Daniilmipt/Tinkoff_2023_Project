@@ -1,5 +1,7 @@
 package org.example.services.impl.Hiber;
 
+import org.example.dto.RegionDto;
+import org.example.mapper.RegionMapper;
 import org.example.model.Region;
 import org.example.repositories.Hiber.RegionHiberRepository;
 import org.example.services.RegionService;
@@ -19,15 +21,15 @@ public class RegionHiberServiceImpl implements RegionService {
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Override
-    public Region save(Region region){
-        Optional<Region> regionDataBase = regionHiberRepository.findIfExists(region.getName());
-        return regionDataBase.orElseGet(() -> regionHiberRepository.save(region));
+    public RegionDto save(Region region){
+        Optional<Region> regionDataBase = regionHiberRepository.findRegionByName(region.getName());
+        return RegionMapper.entityToDto(regionDataBase.orElseGet(() -> regionHiberRepository.save(region)));
     }
 
     @Transactional(isolation= Isolation.READ_UNCOMMITTED, readOnly = true)
     @Override
-    public Optional<Region> get(Long regionId){
-        return regionHiberRepository.findById(regionId);
+    public Optional<RegionDto> get(Long regionId){
+        return RegionMapper.optionalEntityToDto(regionHiberRepository.findById(regionId));
     }
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)

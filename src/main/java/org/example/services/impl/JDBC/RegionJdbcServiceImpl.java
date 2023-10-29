@@ -1,6 +1,8 @@
 package org.example.services.impl.JDBC;
 
+import org.example.dto.RegionDto;
 import org.example.enums.jdbc.RegionSql;
+import org.example.mapper.RegionMapper;
 import org.example.model.Region;
 import org.example.services.RegionService;
 import org.springframework.stereotype.Service;
@@ -18,17 +20,15 @@ public class RegionJdbcServiceImpl implements RegionService {
     }
 
     @Override
-    public Region save(Region region) throws SQLException {
+    public RegionDto save(Region region) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            Region regionInserted = insertRow(connection, region);
-            connection.close();
-            return regionInserted;
+            return insertRow(connection, region);
         }
     }
 
     @Override
-    public Optional<Region> get(Long regionId) throws SQLException {
+    public Optional<RegionDto> get(Long regionId) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
             try (PreparedStatement selectStatement = connection.prepareStatement(RegionSql.SELECT.getMessage())) {
@@ -38,8 +38,7 @@ public class RegionJdbcServiceImpl implements RegionService {
                 if (rs.next()) {
                     region = Optional.of(new Region(rs.getLong("id"), rs.getString("name")));
                 }
-                closeResources(selectStatement, connection);
-                return region;
+                return RegionMapper.optionalEntityToDto(region);
             }
         }
     }
@@ -52,7 +51,6 @@ public class RegionJdbcServiceImpl implements RegionService {
             try (PreparedStatement deleteStatement = connection.prepareStatement(RegionSql.DELETE.getMessage())) {
                 deleteStatement.setLong(1, regionId);
                 deleteStatement.execute();
-                closeResources(deleteStatement, connection);
             }
         }
     }
@@ -66,13 +64,12 @@ public class RegionJdbcServiceImpl implements RegionService {
                 updateStatement.setString(1, name);
                 updateStatement.setLong(2, regionId);
                 updateStatement.execute();
-                closeResources(updateStatement, connection);
             }
         }
     }
     
-    public static Region insertRow(Connection connection, Region region) throws SQLException {
-        Optional<Region> regionDataBase = findIfExists(connection, region.getName());
+    public static RegionDto insertRow(Connection connection, Region region) throws SQLException {
+        Optional<RegionDto> regionDataBase = findIfExists(connection, region.getName());
         if (regionDataBase.isEmpty()) {
             try(PreparedStatement insertStatement = connection.prepareStatement(RegionSql.INSERT.getMessage())) {
                 insertStatement.setString(1, region.getName());
@@ -84,12 +81,7 @@ public class RegionJdbcServiceImpl implements RegionService {
         return regionDataBase.get();
     }
 
-    private static void closeResources(Statement statement, Connection connection) throws SQLException {
-        statement.close();
-        connection.close();
-    }
-
-    public static Optional<Region> findIfExists(Connection connection, String name) throws SQLException {
+    public static Optional<RegionDto> findIfExists(Connection connection, String name) throws SQLException {
         try (PreparedStatement selectStatement = connection.prepareStatement(RegionSql.SELECT_IF_EXISTS.getMessage())) {
             selectStatement.setString(1, name);
             ResultSet rs = selectStatement.executeQuery();
@@ -98,7 +90,7 @@ public class RegionJdbcServiceImpl implements RegionService {
                 region = Optional.of(new Region(rs.getLong("id"), rs.getString("name")));
             }
             selectStatement.close();
-            return region;
+            return RegionMapper.optionalEntityToDto(region);
         }
     }
 }
