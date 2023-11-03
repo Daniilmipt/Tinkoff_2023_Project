@@ -1,4 +1,4 @@
-package org.example.security.controllers;
+package org.example.controllers;
 
 import org.example.dto.AuthenticationDto;
 import org.example.dto.UserDto;
@@ -32,6 +32,7 @@ public class RegistrationController {
         this.authenticationManager = authenticationManager;
     }
 
+    // регистрация
     @PostMapping("/registration")
     public void addUser(@Valid @RequestBody AuthenticationDto authenticationDto,
                         Model model) {
@@ -48,6 +49,7 @@ public class RegistrationController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
+    // авторизация
     @PostMapping("/auth")
     public void authorization(@Valid @RequestBody AuthenticationDto authenticationDto,
                                           Model model) {
@@ -66,6 +68,7 @@ public class RegistrationController {
         model.addAttribute("user", userDto.get());
     }
 
+    // выход
     @DeleteMapping("/out")
     public void logoutPage(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

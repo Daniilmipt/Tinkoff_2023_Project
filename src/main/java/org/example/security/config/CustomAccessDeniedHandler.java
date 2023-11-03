@@ -1,4 +1,4 @@
-package org.example.security.exceptions;
+package org.example.security.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

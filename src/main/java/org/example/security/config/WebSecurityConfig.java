@@ -1,7 +1,6 @@
 package org.example.security.config;
 
 import org.example.conf.EncoderConfig;
-import org.example.security.exceptions.CustomAccessDeniedHandler;
 import org.example.services.impl.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
