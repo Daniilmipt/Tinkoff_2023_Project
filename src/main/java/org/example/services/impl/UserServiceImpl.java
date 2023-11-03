@@ -1,4 +1,4 @@
-package org.example.services.impl.Hiber;
+package org.example.services.impl;
 
 import org.example.conf.EncoderConfig;
 import org.example.dto.UserDto;
@@ -6,6 +6,7 @@ import org.example.mapper.UserMapper;
 import org.example.model.Role;
 import org.example.model.User;
 import org.example.repositories.Hiber.UserHiberRepository;
+import org.example.services.UserService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -16,13 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Service
-public class UserServiceImpl implements UserDetailsService{
+public class UserServiceImpl implements UserDetailsService, UserService {
     private final UserHiberRepository userHiberRepository;
 
     public UserServiceImpl(UserHiberRepository userHiberRepository) {
         this.userHiberRepository = userHiberRepository;
     }
 
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> user = userHiberRepository.findUserByUserName(username);
         if (user.isEmpty()) {
@@ -35,6 +37,7 @@ public class UserServiceImpl implements UserDetailsService{
                 .build();
     }
 
+    @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public UserDto save(User user){
         Optional<User> userDataBase = userHiberRepository.findUserByUserName(user.getUserName());
@@ -50,25 +53,31 @@ public class UserServiceImpl implements UserDetailsService{
         return userDto;
     }
 
+    @Override
     @Transactional(isolation= Isolation.READ_COMMITTED, readOnly = true)
     public Optional<UserDto> get(Long userId){
         return UserMapper.optionalEntityToDto(userHiberRepository.findById(userId));
     }
 
+    @Override
     @Transactional(isolation= Isolation.READ_COMMITTED, readOnly = true)
     public Optional<UserDto> getByUserName(String userName){
         return UserMapper.optionalEntityToDto(userHiberRepository.findUserByUserName(userName));
     }
 
+    @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void delete(Long userId){
         userHiberRepository.deleteById(userId);
     }
 
+    @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void updateUserName(Long userId, String userName){
         userHiberRepository.updateUserName(userId, userName);
     }
+
+    @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
     public void updatePassword(Long userId, String password){
         userHiberRepository.updatePassword(userId, EncoderConfig.getPasswordEncoder().encode(password));

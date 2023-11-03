@@ -1,11 +1,11 @@
-package org.example.controllers;
+package org.example.security.controllers;
 
 import org.example.dto.AuthenticationDto;
 import org.example.dto.UserDto;
-import org.example.exceptions.AuthorizationException;
+import org.example.security.exceptions.AuthorizationException;
 import org.example.mapper.UserMapper;
 import org.example.model.User;
-import org.example.services.impl.Hiber.UserServiceImpl;
+import org.example.services.impl.UserServiceImpl;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -79,5 +79,4 @@ public class RegistrationController {
             model.addAttribute("user", null);
         }
     }
-
 }

@@ -3,7 +3,7 @@ package org.example.conf;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import org.example.dto.ResponseErrorDto;
 import org.example.dto.api.WeatherErrorResponseDto;
-import org.example.exceptions.AuthorizationException;
+import org.example.security.exceptions.AuthorizationException;
 import org.example.exceptions.weatherApi.JsonException;
 import org.example.exceptions.weatherApi.ResponseException;
 import org.example.exceptions.SqlException;

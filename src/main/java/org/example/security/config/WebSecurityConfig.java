@@ -1,7 +1,10 @@
-package org.example.conf;
+package org.example.security.config;
 
-import org.example.exceptions.CustomAccessDeniedHandler;
-import org.example.services.impl.Hiber.UserServiceImpl;
+import org.example.conf.EncoderConfig;
+import org.example.security.exceptions.CustomAccessDeniedHandler;
+import org.example.services.impl.UserServiceImpl;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -60,6 +63,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public ServletContextInitializer servletContextInitializer(@Value("${secure.cookie}") boolean secure) {
+        return servletContext -> servletContext.getSessionCookieConfig().setSecure(secure);
     }
 
     @Override
