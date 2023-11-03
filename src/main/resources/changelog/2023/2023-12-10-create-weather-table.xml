@@ -33,6 +33,21 @@
         <column name="description" type="VARCHAR(255)"/>
     </createTable>
 
+    <createTable tableName="users">
+        <column name="id" type="BIGINT" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="username" type="VARCHAR(255)"/>
+        <column name="password" type="VARCHAR(255)"/>
+    </createTable>
+
+    <createTable tableName="role">
+        <column name="id" type="BIGINT" autoIncrement="true">
+            <constraints primaryKey="true" nullable="false"/>
+        </column>
+        <column name="name" type="VARCHAR(255)"/>
+    </createTable>
+
     <addUniqueConstraint
             constraintName="constraint_weather"
             tableName="weather"
@@ -42,9 +57,13 @@
             tableName="region"
             columnNames="name"/>
     <addUniqueConstraint
-            constraintName="constraint_weather_type"
-            tableName="weather_type"
-            columnNames="description"/>
+            constraintName="constraint_role"
+            tableName="role"
+            columnNames="id, name"/>
+    <addUniqueConstraint
+            constraintName="constraint_user"
+            tableName="users"
+            columnNames="username, password"/>
 
     <createIndex indexName="weather_id" tableName="weather">
         <column name="id"/>
@@ -82,6 +101,15 @@
             baseColumnNames="type_id"
             constraintName="fk_type_id"
             referencedTableName="weather_type"
+            referencedColumnNames="id"
+            onDelete="CASCADE"
+            onUpdate="CASCADE"/>
+
+    <addForeignKeyConstraint
+            baseTableName="role"
+            baseColumnNames="id"
+            constraintName="fk_user_id"
+            referencedTableName="users"
             referencedColumnNames="id"
             onDelete="CASCADE"
             onUpdate="CASCADE"/>
@@ -132,6 +160,28 @@
         <column name="type_id" value="6"/>
         <column name="temperature" value="-4"/>
         <column name="date" value="2023-01-21"/>
+    </insert>
+
+    <insert tableName="users">
+        <column name="id" value="3"/>
+        <column name="username" value="misha"/>
+<!--        пароль = q-->
+        <column name="password" value="$2a$10$KMvrddoRMYbrN1G0zudiFO34I4wmS7Q2jT.3j6GLgDWmLjSJRNLYC"/>
+    </insert>
+    <insert tableName="users">
+        <column name="id" value="4"/>
+        <column name="username" value="petya"/>
+        <!--        пароль = 1-->
+        <column name="password" value="$2a$10$6SgqKf9M4dM3tfpSS.HO8.G4x9BdL0DyOcaG0jm8KuL7ScKSnTDCK"/>
+    </insert>
+
+    <insert tableName="role">
+        <column name="id" value="3"/>
+        <column name="name" value="ADMIN"/>
+    </insert>
+    <insert tableName="role">
+        <column name="id" value="4"/>
+        <column name="name" value="USER"/>
     </insert>
 </changeSet>
 </databaseChangeLog>

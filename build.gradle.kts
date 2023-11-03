@@ -35,10 +35,13 @@ dependencies {
     implementation("org.liquibase:liquibase-core:4.24.0")
     implementation("com.h2database:h2")
     implementation("org.testcontainers:testcontainers:1.16.3")
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.testcontainers:junit-jupiter:1.16.3")
+    testImplementation("org.springframework.security:spring-security-test")
 }
 
 tasks.withType<Test> {
