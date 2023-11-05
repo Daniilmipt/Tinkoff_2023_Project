@@ -39,6 +39,6 @@ public class WeatherTypeHiberServiceImpl implements WeatherTypeService {
     @Override
     public Integer update(Long weatherTypeId, String description){
         weatherTypeHiberRepository.updateWeatherTypeById(weatherTypeId, description);
-        return weatherTypeHiberRepository.getRowsCount(description);
+        return weatherTypeHiberRepository.countByDescription(description);
     }
 }

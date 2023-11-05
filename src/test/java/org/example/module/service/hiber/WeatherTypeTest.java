@@ -50,10 +50,10 @@ public class WeatherTypeTest {
 
     @Test
     public void update_test(){
-        when(weatherTypeHiberRepository.getRowsCount(anyString())).thenReturn(1);
+        when(weatherTypeHiberRepository.countByDescription(anyString())).thenReturn(1);
         Integer rowsCount = weatherTypeHiberService.update(1L, "test");
         assertEquals(rowsCount, 1);
-        verify(weatherTypeHiberRepository).getRowsCount("test");
+        verify(weatherTypeHiberRepository).countByDescription("test");
         verify(weatherTypeHiberRepository).updateWeatherTypeById(1L, "test");
     }
 }

@@ -3,6 +3,7 @@ package org.example.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.security.roles.RolesEnum;
 
 import javax.persistence.*;
 
@@ -23,9 +24,9 @@ public class Role {
     @OneToOne
     @MapsId
     @JoinColumn(name = "id")
-    private User user;
+    private UserEntity userEntity;
 
-    public Role(String name) {
-        this.name = name;
+    public Role(RolesEnum role) {
+        this.name = role.getMessage();
     }
 }

@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Getter
 @Entity
 @Table(name = "users")
-public class User {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     @Column(name = "id")
@@ -31,10 +31,10 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
-        this.role.setUser(this);
+        this.role.setUserEntity(this);
     }
 
-    public User(String userName, String password){
+    public UserEntity(String userName, String password){
         this.userName = userName;
         this.password = password;
     }

@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -35,6 +36,22 @@ public class AuthorizationEndPointTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error", is("Parameter q is missing.")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.timestamp", is(LocalDate.now().toString())))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.path", is("/v1/current.json")));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    public void saveCurrentTemperature_Jdbc() throws Exception {
+        this.mockMvc.perform(get("/external/jdbc")
+                        .param("q", "London")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.id").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.region_id").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.type_id").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.temperature").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.date").isString());
     }
 
     @Test

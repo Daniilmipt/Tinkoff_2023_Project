@@ -1,7 +1,6 @@
 package org.example.services.impl.JDBC;
 
 import org.example.enums.jdbc.RegionSql;
-import org.example.enums.jdbc.WeatherSql;
 import org.example.enums.jdbc.WeatherTypeSql;
 import org.example.exceptions.SqlException;
 import org.example.model.WeatherType;
@@ -82,7 +81,7 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             try {
                 jdbcTemplate.update(WeatherTypeSql.UPDATE.getMessage(), description, weatherTypeId);
-                return jdbcTemplate.queryForObject(WeatherSql.ROWS_COUNT.getMessage(),
+                return jdbcTemplate.queryForObject(WeatherTypeSql.ROWS_COUNT.getMessage(),
                         new Object[]{description}, (rs, rowNum) ->
                                 rs.getInt("cnt")
                 );

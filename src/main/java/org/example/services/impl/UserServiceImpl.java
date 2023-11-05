@@ -4,9 +4,11 @@ import org.example.conf.EncoderConfig;
 import org.example.dto.UserDto;
 import org.example.mapper.UserMapper;
 import org.example.model.Role;
-import org.example.model.User;
+import org.example.model.UserEntity;
 import org.example.repositories.Hiber.UserHiberRepository;
+import org.example.security.roles.RolesEnum;
 import org.example.services.UserService;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,11 +28,11 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> user = userHiberRepository.findUserByUserName(username);
+        Optional<UserEntity> user = userHiberRepository.findUserByUserName(username);
         if (user.isEmpty()) {
             throw new UsernameNotFoundException("Пользователь не найден");
         }
-        return org.springframework.security.core.userdetails.User
+        return User
                 .withUsername(username)
                 .password(user.get().getPassword())
                 .roles(user.get().getRole().getName())
@@ -39,16 +41,16 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
     @Override
     @Transactional(isolation = Isolation.SERIALIZABLE)
-    public UserDto save(User user){
-        Optional<User> userDataBase = userHiberRepository.findUserByUserName(user.getUserName());
+    public UserDto save(UserEntity userEntity){
+        Optional<UserEntity> userDataBase = userHiberRepository.findUserByUserName(userEntity.getUserName());
         if (userDataBase.isPresent()){
             return UserMapper.entityToDto(userDataBase.get());
         }
-        Role role = new Role("USER");
+        Role role = new Role(RolesEnum.USER);
 
-        user.setPassword(EncoderConfig.getPasswordEncoder().encode(user.getPassword()));
-        user.setRole(role);
-        UserDto userDto = UserMapper.entityToDto(userHiberRepository.save(user));
+        userEntity.setPassword(EncoderConfig.getPasswordEncoder().encode(userEntity.getPassword()));
+        userEntity.setRole(role);
+        UserDto userDto = UserMapper.entityToDto(userHiberRepository.save(userEntity));
         userDto.setRole(role);
         return userDto;
     }
