@@ -3,7 +3,6 @@ package org.example.services;
 import org.example.dto.WeatherTypeDto;
 import org.example.model.WeatherType;
 
-import java.sql.SQLException;
 import java.util.Optional;
 
 public interface WeatherTypeService {

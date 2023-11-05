@@ -5,18 +5,23 @@ import org.example.enums.jdbc.WeatherTypeSql;
 import org.example.mapper.WeatherTypeMapper;
 import org.example.model.WeatherType;
 import org.example.services.WeatherTypeService;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Optional;
 
 @Service
 public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
     private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
 
     public WeatherTypeJdbcServiceImpl(DataSource dataSource) {
         this.dataSource = dataSource;
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     /*
@@ -49,6 +54,9 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
                 }
                 return WeatherTypeMapper.optionalEntityToDto(weatherType);
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table weather_type", 500);
         }
     }
 
@@ -57,7 +65,7 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
      потому что в таблицы редко что-то добавляют
      */
     @Override
-    public void delete(Long weatherTypeId) throws SQLException {
+    public void delete(Long weatherTypeId) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
 
@@ -65,6 +73,13 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
                 deleteStatement.setLong(1, weatherTypeId);
                 deleteStatement.execute();
             }
+            catch (DataAccessException e){
+                String message = "Class: " + e.getClass() + "; " + e.getCause();
+                throw new SqlException(message, "table weather_type", 500);
+            }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table weather_type", 500);
         }
     }
 
@@ -73,7 +88,7 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
      потому что в таблицы редко что-то добавляют
      */
     @Override
-    public void update(Long weatherTypeId, String description) throws SQLException {
+    public void update(Long weatherTypeId, String description) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
 
@@ -82,6 +97,9 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
                 updateStatement.setLong(2, weatherTypeId);
                 updateStatement.execute();
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table weather_type", 500);
         }
     }
 

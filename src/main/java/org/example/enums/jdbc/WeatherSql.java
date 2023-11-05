@@ -4,8 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum WeatherSql {
-    SELECT_BY_REGION_DATE("select * from weather where region_id = ? and date = ?"),
-    SELECT("select * from weather where id = ?"),
+    SELECT_BY_REGION_DATE("select * from weather where region_id = ? and date = ? limit 1"),
+    SELECT("select * from weather where id = ? limit 1"),
     SELECT_IF_EXISTS("select * from weather where region_id = ? and date = ?"),
     UPDATE_TEMPERATURE("update weather set temperature = ? where region_id = ? and date = ?"),
     UPDATE_WEATHER("update weather set type_id = ? where region_id = ? and date = ?"),

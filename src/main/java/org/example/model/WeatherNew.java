@@ -17,6 +17,7 @@ import java.time.LocalDate;
 public class WeatherNew {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "region_id")
@@ -25,7 +26,10 @@ public class WeatherNew {
     @Column(name = "type_id")
     private Long typeId;
 
+    @Column(name = "temperature")
     private Integer temperature;
+
+    @Column(name = "date")
     private LocalDate date;
 
     public WeatherNew(Long regionId, Long typeId, Integer temperature, LocalDate date){

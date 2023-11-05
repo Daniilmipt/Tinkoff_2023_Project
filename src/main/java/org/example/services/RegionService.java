@@ -3,7 +3,6 @@ package org.example.services;
 import org.example.dto.RegionDto;
 import org.example.model.Region;
 
-import java.sql.SQLException;
 import java.util.Optional;
 
 public interface RegionService {

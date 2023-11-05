@@ -4,25 +4,33 @@ import org.example.dto.RegionDto;
 import org.example.dto.WeatherDto;
 import org.example.dto.WeatherTypeDto;
 import org.example.enums.jdbc.WeatherSql;
+import org.example.exceptions.SqlException;
 import org.example.exceptions.weatherApi.ResponseException;
 import org.example.mapper.WeatherMapper;
 import org.example.model.Region;
 import org.example.model.WeatherNew;
 import org.example.model.WeatherType;
 import org.example.services.WeatherNewService;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
 public class WeatherNewJdbcServiceImpl implements WeatherNewService {
     private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
 
     public WeatherNewJdbcServiceImpl(DataSource dataSource) {
         this.dataSource = dataSource;
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     /*
@@ -64,7 +72,7 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                         return weatherNewInserted;
                     } catch (Exception e) {
                         connection.rollback(saveRegionAndType);
-                        throw new ResponseException(e.getMessage(), "database exception", 500);
+                        throw new SqlException(e.getMessage(), "database exception", 500);
                     }
                 }
                 catch (Exception e) {
@@ -79,6 +87,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 }
                 throw e;
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table weather", 500);
         }
     }
 
@@ -105,6 +116,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 }
                 return WeatherMapper.optionalEntityToDto(weatherNew);
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table weather", 500);
         }
     }
 
@@ -131,6 +145,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 }
                 return WeatherMapper.optionalEntityToDto(weatherNew);
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table weather", 500);
         }
     }
 
@@ -138,13 +155,16 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
     взял SERIALIZABLE, т.к. часто будут вставлять данные
      */
     @Override
-    public void deleteByRegion(Long regionId) throws SQLException {
+    public void deleteByRegion(Long regionId) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
             try (PreparedStatement deleteStatement = connection.prepareStatement(WeatherSql.DELETE_BY_REGION.getMessage())) {
                 deleteStatement.setLong(1, regionId);
                 deleteStatement.execute();
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table weather", 500);
         }
     }
 
@@ -152,7 +172,7 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
     взял SERIALIZABLE, т.к. часто будут вставлять данные
      */
     @Override
-    public void deleteByRegionAndDate(Long regionId, LocalDate date) throws SQLException {
+    public void deleteByRegionAndDate(Long regionId, LocalDate date) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
@@ -161,6 +181,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 deleteStatement.setDate(2, Date.valueOf(date));
                 deleteStatement.execute();
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table weather", 500);
         }
     }
 
@@ -168,7 +191,7 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
     взял SERIALIZABLE, т.к. часто будут вставлять данные
      */
     @Override
-    public void updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date) throws SQLException {
+    public void updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
@@ -178,6 +201,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 updateStatement.setDate(3, Date.valueOf(date));
                 updateStatement.execute();
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table weather", 500);
         }
     }
 
@@ -185,7 +211,7 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
     взял SERIALIZABLE, т.к. часто будут вставлять данные
      */
     @Override
-    public void updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date) throws SQLException {
+    public void updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
@@ -195,6 +221,9 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 updateStatement.setDate(3, Date.valueOf(date));
                 updateStatement.execute();
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table weather", 500);
         }
     }
 
@@ -229,6 +258,5 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
                 return findIfExists(connection, weatherNew.getRegionId(), weatherNew.getDate()).get();
             }
         }
-        return weatherNewDataBase.get();
     }
 }

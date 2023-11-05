@@ -5,6 +5,7 @@ import org.example.dto.ResponseErrorDto;
 import org.example.dto.api.WeatherErrorResponseDto;
 import org.example.exceptions.weatherApi.JsonException;
 import org.example.exceptions.weatherApi.ResponseException;
+import org.example.exceptions.SqlException;
 import org.example.validation.WeatherApiValid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.function.client.UnknownHttpStatusCodeException;
 
 import java.net.UnknownHostException;
-import java.sql.SQLException;
 
 
 @RestControllerAdvice
@@ -68,15 +68,6 @@ public class WeatherApiExceptionHandler {
         );
     }
 
-    @ExceptionHandler(SQLException.class)
-    public ResponseEntity<Object> handleSQLException(SQLException e){
-        return ResponseErrorDto.getErrorResponse(
-                e.getMessage(),
-                "sql_error",
-                HttpStatus.INTERNAL_SERVER_ERROR
-        );
-    }
-
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<Object> handleIllegalStateException(IllegalStateException e){
         return ResponseErrorDto.getErrorResponse(
@@ -94,4 +85,14 @@ public class WeatherApiExceptionHandler {
                 HttpStatus.INTERNAL_SERVER_ERROR
         );
     }
+
+    @ExceptionHandler(SqlException.class)
+    public ResponseEntity<Object> handleSqlException(SqlException e){
+        return ResponseErrorDto.getErrorResponse(
+                e.getMessage(),
+                e.getUrl(),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
 }

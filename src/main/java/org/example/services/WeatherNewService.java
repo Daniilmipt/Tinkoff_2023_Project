@@ -5,7 +5,6 @@ import org.example.model.Region;
 import org.example.model.WeatherNew;
 import org.example.model.WeatherType;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Optional;
 

@@ -5,18 +5,23 @@ import org.example.enums.jdbc.RegionSql;
 import org.example.mapper.RegionMapper;
 import org.example.model.Region;
 import org.example.services.RegionService;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Optional;
 
 @Service
 public class RegionJdbcServiceImpl implements RegionService {
     private final DataSource dataSource;
+    private final JdbcTemplate jdbcTemplate;
 
     public RegionJdbcServiceImpl(DataSource dataSource) {
         this.dataSource = dataSource;
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
     /*
@@ -26,6 +31,7 @@ public class RegionJdbcServiceImpl implements RegionService {
     @Override
     public RegionDto save(Region region) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
+            connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
             return insertRow(connection, region);
         }
@@ -48,6 +54,9 @@ public class RegionJdbcServiceImpl implements RegionService {
                 }
                 return RegionMapper.optionalEntityToDto(region);
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table region", 500);
         }
     }
 
@@ -56,7 +65,7 @@ public class RegionJdbcServiceImpl implements RegionService {
      потому что в таблицы редко что-то добавляют
      */
     @Override
-    public void delete(Long regionId) throws SQLException {
+    public void delete(Long regionId) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
 
@@ -64,6 +73,9 @@ public class RegionJdbcServiceImpl implements RegionService {
                 deleteStatement.setLong(1, regionId);
                 deleteStatement.execute();
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table region", 500);
         }
     }
 
@@ -72,7 +84,7 @@ public class RegionJdbcServiceImpl implements RegionService {
      потому что в таблицы редко что-то добавляют
      */
     @Override
-    public void update(Long regionId, String name) throws SQLException {
+    public void update(Long regionId, String name) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
 
@@ -81,6 +93,9 @@ public class RegionJdbcServiceImpl implements RegionService {
                 updateStatement.setLong(2, regionId);
                 updateStatement.execute();
             }
+        } catch (SQLException e){
+            String message = "Class: " + e.getClass() + "; " + e.getCause();
+            throw new SqlException(message, "table region", 500);
         }
     }
     
@@ -94,7 +109,6 @@ public class RegionJdbcServiceImpl implements RegionService {
                 return findIfExists(connection, region.getName()).get();
             }
         }
-        return regionDataBase.get();
     }
 
     public static Optional<RegionDto> findIfExists(Connection connection, String name) throws SQLException {
