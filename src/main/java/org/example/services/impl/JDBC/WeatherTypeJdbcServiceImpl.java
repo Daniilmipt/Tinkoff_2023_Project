@@ -1,8 +1,8 @@
 package org.example.services.impl.JDBC;
 
-import org.example.enums.jdbc.RegionSql;
+import org.example.dto.WeatherTypeDto;
 import org.example.enums.jdbc.WeatherTypeSql;
-import org.example.exceptions.SqlException;
+import org.example.mapper.WeatherTypeMapper;
 import org.example.model.WeatherType;
 import org.example.services.WeatherTypeService;
 import org.springframework.dao.DataAccessException;
@@ -24,33 +24,35 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
-    public WeatherType save(WeatherType weatherType) {
+    public WeatherTypeDto save(WeatherType weatherType) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            return insertRow(jdbcTemplate, weatherType);
-        } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause();
-            throw new SqlException(message, "table weather_type", 500);
+            return insertRow(connection, weatherType);
         }
     }
 
+    /*
+    READ_UNCOMMITTED, т.к. в таблицы нечасто вносят изменения посредством update
+     */
     @Override
-    public Optional<WeatherType> get(Long weatherTypeId) {
+    public Optional<WeatherTypeDto> get(Long weatherTypeId) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-            try {
-                return Optional.ofNullable(jdbcTemplate.queryForObject(
-                        WeatherTypeSql.SELECT.getMessage(), new Object[]{weatherTypeId}, (rs, rowNum) ->
-                                new WeatherType(
-                                        rs.getLong("id"),
-                                        rs.getString("description")
-                                )
-                ));
-            } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause();
-                throw new SqlException(message, "table weather_type", 500);
+
+            try (PreparedStatement selectStatement = connection.prepareStatement(WeatherTypeSql.SELECT.getMessage())) {
+                selectStatement.setLong(1, weatherTypeId);
+                ResultSet rs = selectStatement.executeQuery();
+                Optional<WeatherType> weatherType = Optional.empty();
+                if (rs.next()) {
+                    weatherType = Optional.of(new WeatherType(rs.getLong("id"), rs.getString("description")));
+                }
+                return WeatherTypeMapper.optionalEntityToDto(weatherType);
             }
         } catch (SQLException e){
             String message = "Class: " + e.getClass() + "; " + e.getCause();
@@ -58,12 +60,18 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
         }
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
     public void delete(Long weatherTypeId) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            try {
-                jdbcTemplate.update(WeatherTypeSql.DELETE.getMessage(), weatherTypeId);
+
+            try (PreparedStatement deleteStatement = connection.prepareStatement(WeatherTypeSql.DELETE.getMessage())) {
+                deleteStatement.setLong(1, weatherTypeId);
+                deleteStatement.execute();
             }
             catch (DataAccessException e){
                 String message = "Class: " + e.getClass() + "; " + e.getCause();
@@ -75,15 +83,19 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
         }
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
     public void update(Long weatherTypeId, String description) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            try {
-                jdbcTemplate.update(WeatherTypeSql.UPDATE.getMessage(), description, weatherTypeId);
-            } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause();
-                throw new SqlException(message, "table weather_type", 500);
+
+            try (PreparedStatement updateStatement = connection.prepareStatement(WeatherTypeSql.UPDATE.getMessage())) {
+                updateStatement.setString(1, description);
+                updateStatement.setLong(2, weatherTypeId);
+                updateStatement.execute();
             }
         } catch (SQLException e){
             String message = "Class: " + e.getClass() + "; " + e.getCause();
@@ -91,26 +103,27 @@ public class WeatherTypeJdbcServiceImpl implements WeatherTypeService {
         }
     }
 
-    public static WeatherType insertRow(JdbcTemplate jdbcTemplate, WeatherType weatherType) throws SQLException {
-        try {
-            jdbcTemplate.update(RegionSql.INSERT.getMessage(), weatherType.getDescription());
-            return findIfExists(jdbcTemplate, weatherType.getDescription()).get();
-        } catch (DataAccessException e){
-            return findIfExists(jdbcTemplate, weatherType.getDescription()).get();
+    public static WeatherTypeDto insertRow(Connection connection, WeatherType weatherType) throws SQLException {
+        Optional<WeatherTypeDto> weatherTypeDataBase = findIfExists(connection, weatherType.getDescription());
+        if (weatherTypeDataBase.isEmpty()) {
+            try (PreparedStatement insertStatement = connection.prepareStatement(WeatherTypeSql.INSERT.getMessage())) {
+                insertStatement.setString(1, weatherType.getDescription());
+                insertStatement.execute();
+                return findIfExists(connection, weatherType.getDescription()).get();
+            }
         }
+        return weatherTypeDataBase.get();
     }
 
-    public static Optional<WeatherType> findIfExists(JdbcTemplate jdbcTemplate, String description) {
-        try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(
-                    WeatherTypeSql.SELECT_IF_EXISTS.getMessage(), new Object[]{description}, (rs, rowNum) ->
-                            new WeatherType(
-                                    rs.getLong("id"),
-                                    rs.getString("description")
-                            )
-            ));
-        } catch (DataAccessException e){
-            return Optional.empty();
+    public static Optional<WeatherTypeDto> findIfExists(Connection connection, String description) throws SQLException {
+        try (PreparedStatement selectStatement = connection.prepareStatement(WeatherTypeSql.SELECT_IF_EXISTS.getMessage())) {
+            selectStatement.setString(1, description);
+            ResultSet rs = selectStatement.executeQuery();
+            Optional<WeatherType> weatherType = Optional.empty();
+            if (rs.next()) {
+                weatherType = Optional.of(new WeatherType(rs.getLong("id"), rs.getString("description")));
+            }
+            return WeatherTypeMapper.optionalEntityToDto(weatherType);
         }
     }
 }

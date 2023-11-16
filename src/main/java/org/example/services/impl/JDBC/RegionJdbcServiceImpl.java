@@ -1,7 +1,8 @@
 package org.example.services.impl.JDBC;
 
+import org.example.dto.RegionDto;
 import org.example.enums.jdbc.RegionSql;
-import org.example.exceptions.SqlException;
+import org.example.mapper.RegionMapper;
 import org.example.model.Region;
 import org.example.services.RegionService;
 import org.springframework.dao.DataAccessException;
@@ -23,33 +24,35 @@ public class RegionJdbcServiceImpl implements RegionService {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
-    public Region save(Region region) {
+    public RegionDto save(Region region) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setAutoCommit(false);
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            return insertRow(jdbcTemplate, region);
-        } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause();
-            throw new SqlException(message, "table region", 500);
+            return insertRow(connection, region);
         }
     }
 
+
+    /*
+    READ_UNCOMMITTED, т.к. в таблицы нечасто вносят изменения посредством update
+     */
     @Override
-    public Optional<Region> get(Long regionId) {
+    public Optional<RegionDto> get(Long regionId) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-            try {
-                return Optional.ofNullable(jdbcTemplate.queryForObject(
-                        RegionSql.SELECT.getMessage(), new Object[]{regionId}, (rs, rowNum) ->
-                                new Region(
-                                        rs.getLong("id"),
-                                        rs.getString("name")
-                                )
-                ));
-            } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause();
-                throw new SqlException(message, "table region", 500);
+            try (PreparedStatement selectStatement = connection.prepareStatement(RegionSql.SELECT.getMessage())) {
+                selectStatement.setLong(1, regionId);
+                ResultSet rs = selectStatement.executeQuery();
+                Optional<Region> region = Optional.empty();
+                if (rs.next()) {
+                    region = Optional.of(new Region(rs.getLong("id"), rs.getString("name")));
+                }
+                return RegionMapper.optionalEntityToDto(region);
             }
         } catch (SQLException e){
             String message = "Class: " + e.getClass() + "; " + e.getCause();
@@ -57,15 +60,18 @@ public class RegionJdbcServiceImpl implements RegionService {
         }
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
     public void delete(Long regionId) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            try {
-                jdbcTemplate.update(RegionSql.DELETE.getMessage(), regionId);
-            } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause();
-                throw new SqlException(message, "table region", 500);
+
+            try (PreparedStatement deleteStatement = connection.prepareStatement(RegionSql.DELETE.getMessage())) {
+                deleteStatement.setLong(1, regionId);
+                deleteStatement.execute();
             }
         } catch (SQLException e){
             String message = "Class: " + e.getClass() + "; " + e.getCause();
@@ -73,15 +79,19 @@ public class RegionJdbcServiceImpl implements RegionService {
         }
     }
 
+    /*
+    REPEATABLE_READ, т.к. не учитываю фантомное чтение,
+     потому что в таблицы редко что-то добавляют
+     */
     @Override
     public void update(Long regionId, String name) {
         try (Connection connection = dataSource.getConnection()) {
             connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-            try {
-                jdbcTemplate.update(RegionSql.UPDATE.getMessage(), name, regionId);
-            } catch (DataAccessException e){
-                String message = "Class: " + e.getClass() + "; " + e.getCause();
-                throw new SqlException(message, "table region", 500);
+
+            try (PreparedStatement updateStatement = connection.prepareStatement(RegionSql.UPDATE.getMessage())) {
+                updateStatement.setString(1, name);
+                updateStatement.setLong(2, regionId);
+                updateStatement.execute();
             }
         } catch (SQLException e){
             String message = "Class: " + e.getClass() + "; " + e.getCause();
@@ -89,26 +99,28 @@ public class RegionJdbcServiceImpl implements RegionService {
         }
     }
     
-    public static Region insertRow(JdbcTemplate jdbcTemplate, Region region) {
-        try {
-            jdbcTemplate.update(RegionSql.INSERT.getMessage(), region.getName());
-            return findIfExists(jdbcTemplate, region.getName()).get();
-        } catch (DataAccessException e){
-            return findIfExists(jdbcTemplate, region.getName()).get();
+    public static RegionDto insertRow(Connection connection, Region region) throws SQLException {
+        Optional<RegionDto> regionDataBase = findIfExists(connection, region.getName());
+        if (regionDataBase.isEmpty()) {
+            try(PreparedStatement insertStatement = connection.prepareStatement(RegionSql.INSERT.getMessage())) {
+                insertStatement.setString(1, region.getName());
+                insertStatement.execute();
+                insertStatement.close();
+                return findIfExists(connection, region.getName()).get();
+            }
         }
     }
 
-    public static Optional<Region> findIfExists(JdbcTemplate jdbcTemplate, String name) {
-        try {
-            return Optional.ofNullable(jdbcTemplate.queryForObject(
-                    RegionSql.SELECT_IF_EXISTS.getMessage(), new Object[]{name}, (rs, rowNum) ->
-                            new Region(
-                                    rs.getLong("id"),
-                                    rs.getString("name")
-                            )
-            ));
-        } catch (DataAccessException e){
-            return Optional.empty();
+    public static Optional<RegionDto> findIfExists(Connection connection, String name) throws SQLException {
+        try (PreparedStatement selectStatement = connection.prepareStatement(RegionSql.SELECT_IF_EXISTS.getMessage())) {
+            selectStatement.setString(1, name);
+            ResultSet rs = selectStatement.executeQuery();
+            Optional<Region> region = Optional.empty();
+            if (rs.next()) {
+                region = Optional.of(new Region(rs.getLong("id"), rs.getString("name")));
+            }
+            selectStatement.close();
+            return RegionMapper.optionalEntityToDto(region);
         }
     }
 }

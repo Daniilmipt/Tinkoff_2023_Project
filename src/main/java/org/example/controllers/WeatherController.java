@@ -33,7 +33,7 @@ public class WeatherController {
             description = "Получить температуру в цельсиях на сегодняшнюю дату по заданному городу"
     )
     @GetMapping("/external")
-    public ResponseEntity<Object> externalCurrentTemperature(@RequestParam(value="q", required = false)
+    public ResponseEntity<Object> getCurrentTemperature(@RequestParam(value="q", required = false)
                                                              @Parameter(description = "q")
                                                              String q){
         return new ResponseEntity<>(weatherApiService.getCurrentTemperature(q), HttpStatus.OK);
