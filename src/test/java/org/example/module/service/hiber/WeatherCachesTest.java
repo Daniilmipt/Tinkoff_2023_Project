@@ -50,7 +50,7 @@ public class WeatherCachesTest {
     public static void setWeather(){
         weatherCaches = WeatherCaches.getInstance();
         ReflectionTestUtils.setField(weatherCaches, "size", 1000L);
-        ReflectionTestUtils.setField(weatherCaches, "duration", 10L);
+        ReflectionTestUtils.setField(weatherCaches, "duration", 60L);
 
         regionName = "London";
         weatherNew = new WeatherNew(1L, 1L, 1L, 30, LocalDate.now());
@@ -71,16 +71,69 @@ public class WeatherCachesTest {
         assertEquals(weatherCaches.getWeatherObject(regionName).getWeatherNew(), weatherNew);
     }
 
+    @Test
+    public void get_TimeOutIn_Cache() throws InterruptedException {
+        ReflectionTestUtils.setField(weatherCaches, "duration", 10L);
+
+        assertEquals(weatherCaches.getWeatherObject(regionName).getWeatherNew(), weatherNew);
+        Thread.sleep(10000);
+        assertThrows(CacheException.class, () -> weatherCaches.getWeatherObject(regionName));
+
+        ReflectionTestUtils.setField(weatherCaches, "duration", 60L);
+    }
+
+
+    @Test
+    public void save_NotExistsIn_Cache_Overload() {
+        ReflectionTestUtils.setField(weatherCaches, "size", 1L);
+        Region region = new Region(1L, "Moscow");
+        WeatherType weatherType = new WeatherType(1L, "ignored");
+
+        when(weatherModelHiberRepository.save(ArgumentMatchers.any(WeatherNew.class))).thenReturn(weatherNew);
+        when(regionHiberService.save(ArgumentMatchers.any(Region.class))).thenReturn(region);
+        when(weatherTypeHiberService.save(ArgumentMatchers.any(WeatherType.class))).thenReturn(weatherType);
+
+        weatherNewHiberService.saveByWeatherTypeAndRegion(weatherType, region, 0);
+
+        assertDoesNotThrow(() -> weatherCaches.getWeatherObject("Moscow").getWeatherNew());
+        assertEquals(weatherCaches.getCache().getSize(), 1);
+        assertEquals(weatherCaches.getMapCache().size(), 1);
+
+        verify(weatherModelHiberRepository)
+                .findIfExists(anyLong(), ArgumentMatchers.any(LocalDate.class));
+        verify(weatherModelHiberRepository).save(ArgumentMatchers.any(WeatherNew.class));
+        verify(weatherTypeHiberService).save(weatherType);
+        verify(regionHiberService).save(region);
+
+        ReflectionTestUtils.setField(weatherCaches, "size", 1000L);
+    }
 
     @Test
     public void save_NotExistsIn_Cache() {
-        assertTrue(weatherCaches.ifExist(regionName));
+        WeatherNew weatherNew_test = mock(WeatherNew.class);
+        Region region = new Region(1L, "Moscow");
+        WeatherType weatherType = new WeatherType(1L, "ignored");
+
+        when(weatherModelHiberRepository.save(ArgumentMatchers.any(WeatherNew.class))).thenReturn(weatherNew_test);
+        when(regionHiberService.save(ArgumentMatchers.any(Region.class))).thenReturn(region);
+        when(weatherTypeHiberService.save(ArgumentMatchers.any(WeatherType.class))).thenReturn(weatherType);
+
+        weatherNewHiberService.saveByWeatherTypeAndRegion(weatherType, region, 0);
+        assertDoesNotThrow(() -> weatherCaches.getWeatherObject("Moscow").getWeatherNew());
+        assertEquals(weatherCaches.getCache().getSize(), 2);
+        assertEquals(weatherCaches.getMapCache().size(), 2);
+
+        verify(weatherModelHiberRepository)
+                .findIfExists(anyLong(), ArgumentMatchers.any(LocalDate.class));
+        verify(weatherModelHiberRepository).save(ArgumentMatchers.any(WeatherNew.class));
+        verify(weatherTypeHiberService).save(weatherType);
+        verify(regionHiberService).save(region);
     }
 
     @Test
     public void save_ExistsIn_Cache() {
         Region region = new Region(1L, "London");
-        WeatherType weatherType = new WeatherType(1L, "test");
+        WeatherType weatherType = new WeatherType(1L, "ignored");
 
         WeatherNew weatherNewSaved = weatherNewHiberService.saveByWeatherTypeAndRegion(
                 weatherType,
