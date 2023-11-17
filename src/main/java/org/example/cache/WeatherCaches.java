@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Component
 public class WeatherCaches {
@@ -64,6 +65,8 @@ public class WeatherCaches {
     @Value("${cache.time.refresh}")
     public Long duration;
 
+    private final ReentrantLock lock = new ReentrantLock();
+
     public static WeatherCaches getInstance() {
         if (instance == null) {
             synchronized (WeatherCaches.class) {
@@ -76,67 +79,102 @@ public class WeatherCaches {
     }
 
     public void clearCache(){
-        mapCache = new ConcurrentHashMap<>();
-        cache = new ThreadSafeLinkedList<>();
+        lock.lock();
+        try {
+            mapCache = new ConcurrentHashMap<>();
+            cache = new ThreadSafeLinkedList<>();
+        } finally {
+            lock.unlock();
+        }
     }
 
     public WeatherObject getWeatherObject(String regionName){
-        if (!ifExist(regionName)){
-            throw new CacheException("Incorrect key cache");
+        lock.lock();
+        try {
+            if (!ifExist(regionName)) {
+                throw new CacheException("Incorrect key cache");
+            }
+            return mapCache.get(regionName).getData();
+        } finally {
+            lock.unlock();
         }
-        return mapCache.get(regionName).getData();
     }
 
 
     public void setWeather(String regionName, WeatherNew weatherNew){
-        if (!ifExist(regionName)){
-            checkSize();
-            ThreadSafeLinkedList.Node<WeatherObject> node =
-                    cache.addFirst(new WeatherObject(weatherNew, LocalDateTime.now()));
-            mapCache.put(regionName, node);
+        lock.lock();
+        try {
+            if (!ifExist(regionName)) {
+                checkSize();
+                ThreadSafeLinkedList.Node<WeatherObject> node =
+                        cache.addFirst(new WeatherObject(weatherNew, LocalDateTime.now()));
+                mapCache.put(regionName, node);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     public boolean ifExist(String regionName){
-        checkUpdate();
-        return mapCache.containsKey(regionName);
+        lock.lock();
+        try {
+            checkUpdate();
+            return mapCache.containsKey(regionName);
+        } finally {
+            lock.unlock();
+        }
     }
 
     private void checkSize(){
-        ThreadSafeLinkedList.Node<WeatherObject> tailNode = cache.getTail();
-        while (cache.getSize() >= size){
-            mapCache.entrySet().removeIf(
-                    entry ->
-                            entry.getValue().equals(tailNode)
-            );
-            cache.removeLast();
+        lock.lock();
+        try {
+            ThreadSafeLinkedList.Node<WeatherObject> tailNode = cache.getTail();
+            while (cache.getSize() >= size) {
+                mapCache.entrySet().removeIf(
+                        entry ->
+                                entry.getValue().equals(tailNode)
+                );
+                cache.removeLast();
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     private void checkUpdate(){
-        LocalDateTime now = LocalDateTime.now();
-        List<String> keyNames = new ArrayList<>();
+        lock.lock();
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            List<String> keyNames = new ArrayList<>();
 
-        for (var keyValue: mapCache.entrySet()){
-            if (Duration.between(
-                            keyValue.getValue().getData().getLocalDateTime(),
-                            now
-                    ).getSeconds() >= duration) {
-                keyNames.add(keyValue.getKey());
-                cache.remove(keyValue.getValue().getData());
+            for (var keyValue : mapCache.entrySet()) {
+                if (Duration.between(
+                        keyValue.getValue().getData().getLocalDateTime(),
+                        now
+                ).getSeconds() >= duration) {
+                    keyNames.add(keyValue.getKey());
+                    cache.remove(keyValue.getValue().getData());
+                }
             }
-        }
 
-        for (String name : keyNames){
-            mapCache.remove(name);
+            for (String name : keyNames) {
+                mapCache.remove(name);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
     public void clearWeather(WeatherNew weatherNew){
-        WeatherObject weatherObject = new WeatherObject(weatherNew, LocalDateTime.now(), Objects.hashCode(weatherNew));
-        cache.remove(weatherObject);
-        mapCache.entrySet().removeIf(
-                entry -> entry.getValue().getData().equals(weatherObject)
-        );
+        lock.lock();
+        try {
+            WeatherObject weatherObject = new WeatherObject(weatherNew, LocalDateTime.now(), Objects.hashCode(weatherNew));
+            cache.remove(weatherObject);
+            mapCache.entrySet().removeIf(
+                    entry -> entry.getValue().getData().equals(weatherObject)
+            );
+        } finally {
+            lock.unlock();
+        }
     }
 }
