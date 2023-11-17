@@ -3,6 +3,7 @@ package org.example.conf;
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import org.example.dto.ResponseErrorDto;
 import org.example.dto.api.WeatherErrorResponseDto;
+import org.example.exceptions.CacheException;
 import org.example.security.exceptions.AuthorizationException;
 import org.example.exceptions.weatherApi.JsonException;
 import org.example.exceptions.weatherApi.ResponseException;
@@ -151,5 +152,10 @@ public class WeatherApiExceptionHandler {
                 "authentication_exception",
                 HttpStatus.FORBIDDEN
         );
+    }
+
+    @ExceptionHandler(CacheException.class)
+    public ResponseEntity<Object> handleCacheException(CacheException e) {
+        return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

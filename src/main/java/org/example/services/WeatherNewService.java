@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public interface WeatherNewService {
-    WeatherNew save(WeatherNew weatherNew);
     WeatherNew saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature);
     Optional<WeatherNew> getByRegionAndDate(Long region_id, LocalDate date);
     Optional<WeatherNew> get(Long weatherModel_id);

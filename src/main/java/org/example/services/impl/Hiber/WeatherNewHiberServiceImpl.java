@@ -1,5 +1,6 @@
 package org.example.services.impl.Hiber;
 
+import org.example.cache.WeatherCaches;
 import org.example.model.Region;
 import org.example.model.WeatherNew;
 import org.example.model.WeatherType;
@@ -27,14 +28,20 @@ public class WeatherNewHiberServiceImpl implements WeatherNewService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @Override
     public WeatherNew saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature){
+        WeatherCaches weatherCaches = WeatherCaches.getInstance();
+        if (weatherCaches.ifExist(region.getName())){
+            return weatherCaches.getWeatherObject(region.getName()).getWeatherNew();
+        }
+
         Region regionDataBase = regionHiberService.save(region);
         WeatherType weatherTypeDataBase = weatherTypeHiberService.save(weatherType);
-        return save(new WeatherNew(regionDataBase.getId(), weatherTypeDataBase.getId(), temperature, LocalDate.now()));
+
+        WeatherNew weatherNew = save(new WeatherNew(regionDataBase.getId(), weatherTypeDataBase.getId(), temperature, LocalDate.now()));
+        weatherCaches.setWeather(region.getName(), weatherNew);
+        return weatherNew;
     }
 
-    @Transactional(isolation = Isolation.SERIALIZABLE)
-    @Override
-    public WeatherNew save(WeatherNew weatherNew){
+    private WeatherNew save(WeatherNew weatherNew){
         Optional<WeatherNew> weatherNewDataBase = weatherModelHiberRepository.findIfExists(weatherNew.getRegion_id(), weatherNew.getDate());
         return weatherNewDataBase.orElseGet(() -> weatherModelHiberRepository.save(weatherNew));
     }
@@ -54,26 +61,43 @@ public class WeatherNewHiberServiceImpl implements WeatherNewService {
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @Override
     public void deleteByRegion(Long regionId){
+        weatherModelHiberRepository.getWeatherNewsByRegion_id(regionId)
+                .forEach(weather -> WeatherCaches.getInstance().clearWeather(weather));
         weatherModelHiberRepository.deleteWeatherByRegion(regionId);
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @Override
-    public void deleteByRegionAndDate(Long weatherTypeId, LocalDate date){
-        weatherModelHiberRepository.deleteWeatherByRegionAndDate(weatherTypeId, date);
+    public void deleteByRegionAndDate(Long regionId, LocalDate date){
+        WeatherCaches weatherCaches = WeatherCaches.getInstance();
+        Optional<WeatherNew> weatherNewDataBase = weatherModelHiberRepository.getWeatherByRegionAndDate(regionId, date);
+        if (weatherNewDataBase.isPresent()){
+            weatherCaches.clearWeather(weatherNewDataBase.get());
+            weatherModelHiberRepository.deleteWeatherByRegionAndDate(regionId, date);
+        }
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @Override
     public Integer updateTemperatureByRegionAndDate(Long region_id, Integer temperature, LocalDate date){
         weatherModelHiberRepository.updateTemperatureByRegionAndDate(region_id, temperature, date);
+        WeatherCaches weatherCaches = WeatherCaches.getInstance();
+        weatherCaches.setWeather(
+                regionHiberService.get(region_id).get().getName(),
+                weatherModelHiberRepository.getWeatherByRegionAndDate(region_id, date).get()
+        );
         return weatherModelHiberRepository.getRowsCount(region_id, date);
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @Override
     public Integer updateTypeByRegionAndDate(Long region_id, Long type_id, LocalDate date){
+        WeatherCaches weatherCaches = WeatherCaches.getInstance();
         weatherModelHiberRepository.updateTypeByRegionAndDate(region_id, type_id, date);
+        weatherCaches.setWeather(
+                regionHiberService.get(region_id).get().getName(),
+                weatherModelHiberRepository.getWeatherByRegionAndDate(region_id, date).get()
+        );
         return weatherModelHiberRepository.getRowsCount(region_id, date);
     }
 }

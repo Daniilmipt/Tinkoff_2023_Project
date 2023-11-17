@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -37,5 +38,28 @@ public class WeatherNew {
         this.type_id = type_id;
         this.temperature = temperature;
         this.date = date;
+    }
+
+    @Override
+    public String toString() {
+        return "WeatherNew{" +
+                "id=" + id +
+                ", region_id=" + region_id +
+                ", type_id=" + type_id +
+                ", temperature=" + temperature +
+                ", date=" + date +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof WeatherNew that)) return false;
+        return Objects.equals(region_id, that.region_id) && Objects.equals(type_id, that.type_id) && Objects.equals(temperature, that.temperature) && Objects.equals(date, that.date);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(region_id, type_id, temperature, date);
     }
 }
