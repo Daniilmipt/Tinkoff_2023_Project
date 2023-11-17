@@ -48,16 +48,17 @@ public class WeatherCachesTest {
 
     @BeforeAll
     public static void setWeather(){
-        weatherCaches = WeatherCaches.getInstance();
-        ReflectionTestUtils.setField(weatherCaches, "size", 1000L);
-        ReflectionTestUtils.setField(weatherCaches, "duration", 60L);
-
         regionName = "London";
         weatherNew = new WeatherNew(1L, 1L, 1L, 30, LocalDate.now());
+        weatherCaches = WeatherCaches.getInstance();
+
+        ReflectionTestUtils.setField(weatherCaches, "size", 1000L);
+        ReflectionTestUtils.setField(weatherCaches, "duration", 60L);
     }
 
     @BeforeEach
     public void setCache(){
+        weatherCaches.clearCache();
         weatherCaches.setWeather(regionName, weatherNew);
     }
 
@@ -84,6 +85,21 @@ public class WeatherCachesTest {
 
 
     @Test
+    public void save_NotExistsIn_Cache_Order() throws InterruptedException {
+        WeatherNew weatherNew_test = new WeatherNew(1L, 1L, 1L, 60, LocalDate.now());
+        Thread.sleep(3000);
+        weatherCaches.setWeather("Moscow", weatherNew_test);
+
+        ReflectionTestUtils.setField(weatherCaches, "duration", 10L);
+        Thread.sleep(8000);
+        assertDoesNotThrow(() -> weatherCaches.getWeatherObject("Moscow").getWeatherNew());
+        assertThrows(CacheException.class, () -> weatherCaches.getWeatherObject(regionName));
+
+        ReflectionTestUtils.setField(weatherCaches, "duration", 60L);
+    }
+
+
+    @Test
     public void save_NotExistsIn_Cache_Overload() {
         ReflectionTestUtils.setField(weatherCaches, "size", 1L);
         Region region = new Region(1L, "Moscow");
@@ -95,6 +111,7 @@ public class WeatherCachesTest {
 
         weatherNewHiberService.saveByWeatherTypeAndRegion(weatherType, region, 0);
 
+        assertThrows(CacheException.class, () -> weatherCaches.getWeatherObject(regionName));
         assertDoesNotThrow(() -> weatherCaches.getWeatherObject("Moscow").getWeatherNew());
         assertEquals(weatherCaches.getCache().getSize(), 1);
         assertEquals(weatherCaches.getMapCache().size(), 1);

@@ -53,10 +53,10 @@ public class WeatherCaches {
     private static volatile WeatherCaches instance;
 
     @Getter
-    private final Map<String, ThreadSafeLinkedList.Node<WeatherObject>> mapCache = new ConcurrentHashMap<>();
+    private Map<String, ThreadSafeLinkedList.Node<WeatherObject>> mapCache = new ConcurrentHashMap<>();
 
     @Getter
-    private final ThreadSafeLinkedList<WeatherObject> cache = new ThreadSafeLinkedList<>();
+    private ThreadSafeLinkedList<WeatherObject> cache = new ThreadSafeLinkedList<>();
 
     @Value("${cache.course.size}")
     public Long size;
@@ -75,12 +75,18 @@ public class WeatherCaches {
         return instance;
     }
 
+    public void clearCache(){
+        mapCache = new ConcurrentHashMap<>();
+        cache = new ThreadSafeLinkedList<>();
+    }
+
     public WeatherObject getWeatherObject(String regionName){
         if (!ifExist(regionName)){
             throw new CacheException("Incorrect key cache");
         }
         return mapCache.get(regionName).getData();
     }
+
 
     public void setWeather(String regionName, WeatherNew weatherNew){
         if (!ifExist(regionName)){
