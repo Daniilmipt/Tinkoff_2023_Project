@@ -7,6 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -35,4 +36,7 @@ public interface WeatherModelHiberRepository extends CrudRepository<WeatherNew, 
 
     @Query("select count(*) as cnt from WeatherNew as wn where wn.region_id = :region_id and wn.date=:date")
     Integer getRowsCount(Long region_id, LocalDate date);
+
+    @Query("select wn from WeatherNew as wn where wn.region_id = :regionId")
+    List<WeatherNew> getWeatherNewsByRegion_id(Long regionId);
 }

@@ -25,7 +25,7 @@ public class UserEntity {
     @Column(name = "password")
     private String password;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "userEntity", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private Role role;
 

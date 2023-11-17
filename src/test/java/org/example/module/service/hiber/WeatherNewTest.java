@@ -36,18 +36,6 @@ public class WeatherNewTest {
     private WeatherTypeHiberServiceImpl weatherTypeHiberService;
 
     @Test
-    public void save_test() {
-        WeatherNew weatherNew = mock(WeatherNew.class);
-
-        when(weatherModelHiberRepository.save(weatherNew)).thenReturn(weatherNew);
-        WeatherNew weatherNewSaved = weatherNewHiberService.save(weatherNew);
-        assertNotNull(weatherNewSaved);
-        assertEquals(weatherNew, weatherNewSaved);
-        verify(weatherModelHiberRepository).save(weatherNew);
-        verify(weatherModelHiberRepository).findIfExists(weatherNew.getRegion_id(), weatherNew.getDate());
-    }
-
-    @Test
     public void saveByWeatherTypeAndRegion_test() {
         WeatherNew weatherNew = mock(WeatherNew.class);
         Region region = new Region(1L, "test");

@@ -30,17 +30,6 @@ public class WeatherNewJdbcServiceImpl implements WeatherNewService {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    @Override
-    public WeatherNew save(WeatherNew weatherNew) {
-        try (Connection connection = dataSource.getConnection()) {
-            connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            return insertRow(jdbcTemplate, weatherNew);
-        } catch (SQLException e){
-            String message = "Class: " + e.getClass() + "; " + e.getCause();
-            throw new SqlException(message, "table weather", 500);
-        }
-    }
-
 
     @Override
     public WeatherNew saveByWeatherTypeAndRegion(WeatherType weatherType, Region region, Integer temperature) {
