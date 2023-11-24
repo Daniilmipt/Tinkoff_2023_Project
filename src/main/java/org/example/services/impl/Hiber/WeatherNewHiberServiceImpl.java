@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -56,6 +58,11 @@ public class WeatherNewHiberServiceImpl implements WeatherNewService {
     @Override
     public Optional<WeatherNew> getByRegionAndDate(Long region_id, LocalDate date){
         return weatherModelHiberRepository.getWeatherByRegionAndDate(region_id, date);
+    }
+
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    public List<Integer> getLastWeathersByRegion(Long region_id, Pageable pageable){
+        return weatherModelHiberRepository.getLastWeathersByRegion(region_id, pageable);
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
