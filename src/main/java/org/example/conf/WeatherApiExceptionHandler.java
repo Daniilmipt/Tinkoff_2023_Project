@@ -1,6 +1,7 @@
 package org.example.conf;
 
 import io.github.resilience4j.ratelimiter.RequestNotPermitted;
+import org.apache.kafka.common.errors.TimeoutException;
 import org.example.dto.ResponseErrorDto;
 import org.example.dto.api.WeatherErrorResponseDto;
 import org.example.exceptions.CacheException;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.KafkaException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.reactive.function.client.UnknownHttpStatusCodeException;
+import org.springframework.kafka.listener.ListenerExecutionFailedException;
 
 import java.net.UnknownHostException;
 
@@ -156,6 +159,21 @@ public class WeatherApiExceptionHandler {
 
     @ExceptionHandler(CacheException.class)
     public ResponseEntity<Object> handleCacheException(CacheException e) {
+        return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ListenerExecutionFailedException.class)
+    public ResponseEntity<Object> handleListenerExecutionFailedException(ListenerExecutionFailedException e) {
+        return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(KafkaException.class)
+    public ResponseEntity<Object> handleKafkaException(KafkaException e) {
+        return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(TimeoutException.class)
+    public ResponseEntity<Object> handleTimeoutException(TimeoutException e) {
         return new ResponseEntity<>(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

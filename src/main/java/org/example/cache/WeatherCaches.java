@@ -59,11 +59,13 @@ public class WeatherCaches {
     @Getter
     private ThreadSafeLinkedList<WeatherObject> cache = new ThreadSafeLinkedList<>();
 
-    @Value("${cache.course.size}")
-    public Long size;
+    @Getter
+    @Setter
+    private Long size = 1000L;
 
-    @Value("${cache.time.refresh}")
-    public Long duration;
+    @Getter
+    @Setter
+    private Long duration = 60L;
 
     private final ReentrantLock lock = new ReentrantLock();
 

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -39,4 +40,7 @@ public interface WeatherModelHiberRepository extends CrudRepository<WeatherNew, 
 
     @Query("select wn from WeatherNew as wn where wn.region_id = :regionId")
     List<WeatherNew> getWeatherNewsByRegion_id(Long regionId);
+
+    @Query(value = "select wn.temperature from weather as wn where wn.region_id = :regionId order by wn.date desc", nativeQuery = true)
+    List<Integer> getLastWeathersByRegion(Long regionId, Pageable pageable);
 }

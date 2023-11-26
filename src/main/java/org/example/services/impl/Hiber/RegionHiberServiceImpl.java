@@ -30,6 +30,11 @@ public class RegionHiberServiceImpl implements RegionService {
         return regionHiberRepository.findById(regionId);
     }
 
+    @Transactional(isolation= Isolation.READ_UNCOMMITTED, readOnly = true)
+    public Optional<Region> getByName(String regionName){
+        return regionHiberRepository.findIfExists(regionName);
+    }
+
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     @Override
     public void delete(Long regionId){
